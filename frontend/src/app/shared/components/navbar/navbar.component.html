@@ -1,0 +1,22 @@
+<nav [class.scrolled]="scrolled()" [class.menu-open]="menuOpen()">
+  <div class="nav-inner">
+    <a routerLink="/" class="logo" (click)="closeMenu()">
+      <span class="material-symbols-outlined logo-icon">local_florist</span>
+      <span class="logo-text">Smiley Faces</span>
+    </a>
+
+    <button class="hamburger" (click)="toggleMenu()" [attr.aria-expanded]="menuOpen()" aria-label="Toggle menu">
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+    </button>
+
+    <div class="nav-links" [class.open]="menuOpen()">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMenu()">Home</a>
+      <a routerLink="/gallery" routerLinkActive="active" (click)="closeMenu()">Gallery</a>
+      <a routerLink="/booking" routerLinkActive="active" (click)="closeMenu()">Booking</a>
+      <a routerLink="/about" routerLinkActive="active" (click)="closeMenu()">About</a>
+      <a routerLink="/booking" class="book-now-btn" (click)="closeMenu()">Book Now</a>
+    </div>
+  </div>
+</nav>

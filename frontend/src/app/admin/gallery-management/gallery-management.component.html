@@ -1,0 +1,83 @@
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    <div class="sidebar-logo">
+      <span class="material-symbols-outlined">local_florist</span>
+      <span class="logo-text">Smiley Faces</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a routerLink="/admin/dashboard" routerLinkActive="active" class="nav-item">
+        <span class="material-symbols-outlined">dashboard</span> Dashboard
+      </a>
+      <a routerLink="/admin/bookings" routerLinkActive="active" class="nav-item">
+        <span class="material-symbols-outlined">calendar_month</span> Bookings
+      </a>
+      <a routerLink="/admin/gallery" routerLinkActive="active" class="nav-item">
+        <span class="material-symbols-outlined">collections</span> Gallery
+      </a>
+      <a routerLink="/admin/settings" routerLinkActive="active" class="nav-item">
+        <span class="material-symbols-outlined">settings</span> Settings
+      </a>
+    </nav>
+    <div class="sidebar-bottom">
+      <a routerLink="/" class="nav-item"><span class="material-symbols-outlined">language</span> View Site</a>
+      <button (click)="logout()" class="nav-item logout-btn"><span class="material-symbols-outlined">logout</span> Sign Out</button>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-header">
+      <h1 class="headline-lg">Gallery</h1>
+      <p class="body-md text-muted">Manage your portfolio images.</p>
+    </div>
+
+    <div class="upload-section">
+      <h3 class="title-lg">Upload New Image</h3>
+      <div class="upload-form">
+        <div class="upload-fields">
+          <div class="form-field">
+            <label class="label-sm">Title (optional)</label>
+            <input type="text" [(ngModel)]="title" placeholder="Image title">
+          </div>
+          <div class="form-field">
+            <label class="label-sm">Category</label>
+            <select [(ngModel)]="category">
+              @for (cat of categories; track cat.value) {
+                <option [value]="cat.value">{{ cat.label }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-field">
+            <label class="label-sm">Image</label>
+            <input type="file" accept="image/*" (change)="onFileSelected($event)">
+          </div>
+        </div>
+        <button class="upload-btn" (click)="upload()" [disabled]="!selectedFile || uploading()">
+          @if (uploading()) { Uploading... } @else { Upload Image }
+        </button>
+      </div>
+    </div>
+
+    <div class="gallery-grid">
+      @for (item of items(); track item.id) {
+        <div class="gallery-card">
+          <div class="gallery-card-image">
+            <img [src]="item.image_path" [alt]="item.title || 'Gallery image'">
+            <button class="delete-btn" (click)="deleteItem(item.id)" title="Delete">
+              <span class="material-symbols-outlined">delete</span>
+            </button>
+          </div>
+          <div class="gallery-card-info">
+            <span class="body-sm">{{ item.title || 'Untitled' }}</span>
+            <span class="label-sm text-muted">{{ item.category }}</span>
+          </div>
+        </div>
+      }
+      @if (items().length === 0) {
+        <div class="empty-state">
+          <span class="material-symbols-outlined">add_photo_alternate</span>
+          <p class="body-md text-muted">No images yet. Upload your first portfolio piece above.</p>
+        </div>
+      }
+    </div>
+  </main>
+</div>

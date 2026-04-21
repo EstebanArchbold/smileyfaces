@@ -1,0 +1,83 @@
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    <div class="sidebar-logo">
+      <span class="material-symbols-outlined">local_florist</span>
+      <span class="logo-text">Smiley Faces</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a routerLink="/admin/dashboard" routerLinkActive="active" class="nav-item">
+        <span class="material-symbols-outlined">dashboard</span> Dashboard
+      </a>
+      <a routerLink="/admin/bookings" routerLinkActive="active" class="nav-item">
+        <span class="material-symbols-outlined">calendar_month</span> Bookings
+      </a>
+      <a routerLink="/admin/gallery" routerLinkActive="active" class="nav-item">
+        <span class="material-symbols-outlined">collections</span> Gallery
+      </a>
+      <a routerLink="/admin/settings" routerLinkActive="active" class="nav-item">
+        <span class="material-symbols-outlined">settings</span> Settings
+      </a>
+    </nav>
+    <div class="sidebar-bottom">
+      <a routerLink="/" class="nav-item"><span class="material-symbols-outlined">language</span> View Site</a>
+      <button (click)="logout()" class="nav-item logout-btn"><span class="material-symbols-outlined">logout</span> Sign Out</button>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-header">
+      <h1 class="headline-lg">Settings</h1>
+      <p class="body-md text-muted">Configure your business preferences.</p>
+    </div>
+
+    <div class="settings-card">
+      <h3 class="title-lg">Pricing</h3>
+      <p class="body-sm text-muted settings-desc">Set your hourly rate. This is used to calculate revenue in the dashboard.</p>
+
+      <div class="setting-field">
+        <label class="label-sm" for="rate">Hourly Rate ($)</label>
+        <div class="rate-input-group">
+          <span class="rate-prefix">$</span>
+          <input id="rate" type="number" [(ngModel)]="hourlyRate" min="0" step="5">
+          <span class="rate-suffix">/ hour</span>
+        </div>
+      </div>
+
+      <div class="settings-actions">
+        <button class="save-btn" (click)="save()" [disabled]="saving()">
+          @if (saving()) { Saving... } @else { Save Changes }
+        </button>
+        @if (saved()) {
+          <span class="save-success">
+            <span class="material-symbols-outlined">check_circle</span>
+            Settings saved
+          </span>
+        }
+      </div>
+    </div>
+
+    <div class="settings-card">
+      <h3 class="title-lg">Google Calendar</h3>
+      <p class="body-sm text-muted settings-desc">
+        Connect your Google Calendar to automatically sync confirmed bookings.
+      </p>
+      <div class="gcal-status">
+        <span class="material-symbols-outlined status-icon pending">cloud_off</span>
+        <div>
+          <span class="body-md">Not configured</span>
+          <p class="body-sm text-muted">Update the .env file in the backend with your Google Calendar API credentials.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-card">
+      <h3 class="title-lg">Admin Credentials</h3>
+      <p class="body-sm text-muted settings-desc">
+        Admin login credentials are managed via the backend .env file for security.
+      </p>
+      <div class="env-info">
+        <code>ADMIN_EMAIL</code> and <code>ADMIN_PASSWORD_HASH</code> in <code>backend/.env</code>
+      </div>
+    </div>
+  </main>
+</div>

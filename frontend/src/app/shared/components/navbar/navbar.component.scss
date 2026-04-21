@@ -1,0 +1,154 @@
+nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  padding: 1rem 2rem;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &.scrolled {
+    background: rgba(230, 177, 190, 0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 12px 24px rgba(48, 17, 27, 0.06);
+  }
+}
+
+.nav-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: var(--emerald);
+
+  .logo-icon {
+    font-size: 1.75rem;
+  }
+
+  .logo-text {
+    font-family: 'Noto Serif', serif;
+    font-weight: 700;
+    font-size: 1.25rem;
+    letter-spacing: -0.02em;
+  }
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+
+  a {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05rem;
+    color: var(--on-surface);
+    text-decoration: none;
+    position: relative;
+    transition: color 0.3s ease;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--emerald);
+      transition: width 0.3s ease;
+    }
+
+    &:hover, &.active {
+      color: var(--emerald);
+      &::after { width: 100%; }
+    }
+  }
+
+  .book-now-btn {
+    background: var(--emerald);
+    color: var(--on-primary);
+    padding: 0.6rem 1.5rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+
+    &::after { display: none; }
+
+    &:hover {
+      color: var(--on-primary);
+      transform: scale(1.03);
+      box-shadow: 0 8px 16px rgba(33, 84, 65, 0.2);
+    }
+  }
+}
+
+.hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  padding: 8px;
+  cursor: pointer;
+  background: none;
+  border: none;
+
+  .hamburger-line {
+    width: 24px;
+    height: 2px;
+    background: var(--on-surface);
+    border-radius: 2px;
+    transition: all 0.3s ease;
+  }
+}
+
+@media (max-width: 768px) {
+  nav {
+    padding: 0.75rem 1.25rem;
+    background: rgba(230, 177, 190, 0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+
+  .hamburger {
+    display: flex;
+  }
+
+  nav.menu-open .hamburger {
+    .hamburger-line:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+    .hamburger-line:nth-child(2) { opacity: 0; }
+    .hamburger-line:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+  }
+
+  .nav-links {
+    position: fixed;
+    top: 60px;
+    left: 0;
+    right: 0;
+    background: rgba(230, 177, 190, 0.95);
+    backdrop-filter: blur(20px);
+    flex-direction: column;
+    padding: 2rem;
+    gap: 1.5rem;
+    transform: translateY(-120%);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &.open {
+      transform: translateY(0);
+    }
+
+    .book-now-btn {
+      width: 100%;
+      text-align: center;
+    }
+  }
+}

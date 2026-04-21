@@ -1,0 +1,129 @@
+@if (success()) {
+  <section class="booking-success section-padding">
+    <div class="container success-container">
+      <span class="material-symbols-outlined success-icon">check_circle</span>
+      <h2 class="headline-lg">Booking Confirmed!</h2>
+      <p class="body-lg text-muted">Thank you for choosing Smiley Faces. We'll reach out shortly to confirm your appointment details.</p>
+      <a routerLink="/" class="back-home-btn">Back to Home</a>
+    </div>
+  </section>
+} @else {
+  <section class="booking-page section-padding">
+    <div class="container">
+      <div class="booking-page-header">
+        <p class="label-sm text-muted">Book a Session</p>
+        <h1 class="headline-lg text-emerald">Reserve Your Glow</h1>
+        <p class="body-lg text-muted">Select your preferred date for a private session.</p>
+      </div>
+
+      <!-- Step 1: Service Type -->
+      <div class="booking-step">
+        <h3 class="headline-sm">Choose Your Service</h3>
+        <div class="service-pills">
+          @for (service of services; track service.value) {
+            <button
+              class="service-pill"
+              [class.active]="selectedService() === service.value"
+              (click)="selectService(service.value)">
+              <span class="material-symbols-outlined">{{ service.icon }}</span>
+              {{ service.label }}
+            </button>
+          }
+        </div>
+      </div>
+
+      <div class="booking-grid">
+        <!-- Step 2: Calendar -->
+        <div class="booking-calendar">
+          <h3 class="headline-sm">Select Date</h3>
+          <div class="calendar-card">
+            <div class="cal-header">
+              <button (click)="prevMonth()" aria-label="Previous month">
+                <span class="material-symbols-outlined">chevron_left</span>
+              </button>
+              <span class="label-lg">{{ monthLabel() }}</span>
+              <button (click)="nextMonth()" aria-label="Next month">
+                <span class="material-symbols-outlined">chevron_right</span>
+              </button>
+            </div>
+            <div class="cal-grid">
+              @for (label of dayLabels; track label) {
+                <span class="cal-day-label">{{ label }}</span>
+              }
+              @for (day of calendarDays(); track day.date.toISOString()) {
+                <button
+                  class="cal-day"
+                  [class.other-month]="!day.currentMonth"
+                  [class.today]="isToday(day)"
+                  [class.selected]="isSelected(day)"
+                  [class.past]="isPast(day)"
+                  [disabled]="!day.currentMonth || isPast(day)"
+                  (click)="selectDate(day)">
+                  {{ day.day }}
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: Time Slot -->
+        <div class="booking-time">
+          <h3 class="headline-sm">Select Time</h3>
+          <div class="time-slots">
+            @for (slot of timeSlots; track slot.start) {
+              <button
+                class="time-slot-card"
+                [class.active]="selectedTimeSlot() === slot.start + '-' + slot.end"
+                (click)="selectTimeSlot(slot.start + '-' + slot.end)">
+                <span class="material-symbols-outlined">schedule</span>
+                <span>{{ slot.label }}</span>
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4: Client Info -->
+      <div class="booking-step">
+        <h3 class="headline-sm">Your Details</h3>
+        <form [formGroup]="form" (ngSubmit)="submit()" class="booking-form">
+          <div class="form-row">
+            <div class="form-field">
+              <label class="label-sm" for="name">Full Name *</label>
+              <input id="name" type="text" formControlName="client_name" placeholder="Your full name">
+            </div>
+            <div class="form-field">
+              <label class="label-sm" for="email">Email *</label>
+              <input id="email" type="email" formControlName="client_email" placeholder="your@email.com">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label class="label-sm" for="phone">Phone</label>
+              <input id="phone" type="tel" formControlName="client_phone" placeholder="(optional)">
+            </div>
+          </div>
+          <div class="form-field">
+            <label class="label-sm" for="notes">Notes</label>
+            <textarea id="notes" formControlName="notes" rows="3" placeholder="Any special requests or details..."></textarea>
+          </div>
+
+          @if (error()) {
+            <div class="form-error">{{ error() }}</div>
+          }
+
+          <button
+            type="submit"
+            class="submit-btn"
+            [disabled]="form.invalid || !selectedDate() || !selectedTimeSlot() || submitting()">
+            @if (submitting()) {
+              Booking...
+            } @else {
+              Confirm Appointment
+            }
+          </button>
+        </form>
+      </div>
+    </div>
+  </section>
+}

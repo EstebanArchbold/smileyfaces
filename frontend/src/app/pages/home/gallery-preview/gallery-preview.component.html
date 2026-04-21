@@ -1,0 +1,36 @@
+<section class="gallery-preview section-padding">
+  <div class="container">
+    <div class="gallery-header">
+      <div>
+        <p class="label-sm text-muted">Selected Works</p>
+        <h2 class="headline-lg">The Gallery</h2>
+      </div>
+      <div class="gallery-header-right">
+        <p class="body-md text-muted">A curation of our most sought-after designs, from minimal accents to full-face transformations.</p>
+        <span class="material-symbols-outlined brush-icon">brush</span>
+      </div>
+    </div>
+
+    <div class="gallery-grid">
+      @for (item of items(); track item.id) {
+        <div class="gallery-item" [class.tall]="$index === 0 || $index === 3">
+          <img [src]="item.image_path" [alt]="item.title || 'Gallery work'">
+        </div>
+      }
+      @if (items().length === 0) {
+        @for (i of [1,2,3,4]; track i) {
+          <div class="gallery-item gallery-placeholder" [class.tall]="i === 1 || i === 4">
+            <span class="material-symbols-outlined">image</span>
+          </div>
+        }
+      }
+    </div>
+
+    <div class="gallery-cta">
+      <a routerLink="/gallery" class="view-all-link">
+        View Full Gallery
+        <span class="material-symbols-outlined">arrow_forward</span>
+      </a>
+    </div>
+  </div>
+</section>

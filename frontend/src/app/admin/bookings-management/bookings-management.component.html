@@ -1,0 +1,105 @@
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    <div class="sidebar-logo">
+      <span class="material-symbols-outlined">local_florist</span>
+      <span class="logo-text">Smiley Faces</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a routerLink="/admin/dashboard" routerLinkActive="active" class="nav-item">
+        <span class="material-symbols-outlined">dashboard</span> Dashboard
+      </a>
+      <a routerLink="/admin/bookings" routerLinkActive="active" class="nav-item">
+        <span class="material-symbols-outlined">calendar_month</span> Bookings
+      </a>
+      <a routerLink="/admin/gallery" routerLinkActive="active" class="nav-item">
+        <span class="material-symbols-outlined">collections</span> Gallery
+      </a>
+      <a routerLink="/admin/settings" routerLinkActive="active" class="nav-item">
+        <span class="material-symbols-outlined">settings</span> Settings
+      </a>
+    </nav>
+    <div class="sidebar-bottom">
+      <a routerLink="/" class="nav-item"><span class="material-symbols-outlined">language</span> View Site</a>
+      <button (click)="logout()" class="nav-item logout-btn"><span class="material-symbols-outlined">logout</span> Sign Out</button>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-header">
+      <h1 class="headline-lg">Bookings</h1>
+      <p class="body-md text-muted">Manage all client appointments.</p>
+    </div>
+
+    <div class="filter-bar">
+      <div class="filter-field">
+        <label class="label-sm">Status</label>
+        <select [(ngModel)]="statusFilter" (ngModelChange)="onStatusFilterChange()">
+          <option value="">All Statuses</option>
+          <option value="pending">Pending</option>
+          <option value="confirmed">Confirmed</option>
+          <option value="completed">Completed</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
+      <span class="body-sm text-muted">{{ total() }} bookings found</span>
+    </div>
+
+    <div class="bookings-table-wrap">
+      <table class="bookings-table">
+        <thead>
+          <tr>
+            <th class="label-sm">Date</th>
+            <th class="label-sm">Client</th>
+            <th class="label-sm">Service</th>
+            <th class="label-sm">Time</th>
+            <th class="label-sm">Status</th>
+            <th class="label-sm">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (booking of bookings(); track booking.id) {
+            <tr>
+              <td>{{ booking.date }}</td>
+              <td>
+                <div class="client-info">
+                  <span class="body-md">{{ booking.client_name }}</span>
+                  <span class="body-sm text-muted">{{ booking.client_email }}</span>
+                </div>
+              </td>
+              <td>{{ getServiceLabel(booking.service_type) }}</td>
+              <td>{{ booking.start_time }} — {{ booking.end_time }}</td>
+              <td>
+                <span class="status-badge" [attr.data-status]="booking.status">
+                  {{ booking.status }}
+                </span>
+              </td>
+              <td>
+                <select
+                  class="action-select"
+                  [ngModel]="booking.status"
+                  (ngModelChange)="updateStatus(booking, $event)">
+                  <option value="pending">Pending</option>
+                  <option value="confirmed">Confirmed</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (totalPages() > 1) {
+      <div class="pagination">
+        <button (click)="prevPage()" [disabled]="page() === 1" class="page-btn">
+          <span class="material-symbols-outlined">chevron_left</span>
+        </button>
+        <span class="body-sm">Page {{ page() }} of {{ totalPages() }}</span>
+        <button (click)="nextPage()" [disabled]="page() === totalPages()" class="page-btn">
+          <span class="material-symbols-outlined">chevron_right</span>
+        </button>
+      </div>
+    }
+  </main>
+</div>

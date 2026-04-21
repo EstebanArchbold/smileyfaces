@@ -1,0 +1,24 @@
+@if (visible && images.length > 0) {
+  <div class="lightbox-backdrop" (click)="onBackdropClick($event)">
+    <button class="lightbox-close" (click)="close.emit()" aria-label="Close">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+
+    @if (images.length > 1) {
+      <button class="lightbox-nav lightbox-prev" (click)="prev()" aria-label="Previous">
+        <span class="material-symbols-outlined">chevron_left</span>
+      </button>
+      <button class="lightbox-nav lightbox-next" (click)="next()" aria-label="Next">
+        <span class="material-symbols-outlined">chevron_right</span>
+      </button>
+    }
+
+    <div class="lightbox-content">
+      <img [src]="images[currentIndex]" [alt]="'Gallery image ' + (currentIndex + 1)">
+    </div>
+
+    @if (images.length > 1) {
+      <div class="lightbox-counter">{{ currentIndex + 1 }} / {{ images.length }}</div>
+    }
+  </div>
+}

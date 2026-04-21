@@ -1,0 +1,78 @@
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    <div class="sidebar-logo">
+      <span class="material-symbols-outlined">local_florist</span>
+      <span class="logo-text">Smiley Faces</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a routerLink="/admin/dashboard" routerLinkActive="active" class="nav-item">
+        <span class="material-symbols-outlined">dashboard</span>
+        Dashboard
+      </a>
+      <a routerLink="/admin/bookings" routerLinkActive="active" class="nav-item">
+        <span class="material-symbols-outlined">calendar_month</span>
+        Bookings
+      </a>
+      <a routerLink="/admin/gallery" routerLinkActive="active" class="nav-item">
+        <span class="material-symbols-outlined">collections</span>
+        Gallery
+      </a>
+      <a routerLink="/admin/settings" routerLinkActive="active" class="nav-item">
+        <span class="material-symbols-outlined">settings</span>
+        Settings
+      </a>
+    </nav>
+    <div class="sidebar-bottom">
+      <a routerLink="/" class="nav-item">
+        <span class="material-symbols-outlined">language</span>
+        View Site
+      </a>
+      <button (click)="logout()" class="nav-item logout-btn">
+        <span class="material-symbols-outlined">logout</span>
+        Sign Out
+      </button>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-header">
+      <h1 class="headline-lg">Dashboard</h1>
+      <p class="body-md text-muted">Welcome back. Here's your business overview.</p>
+    </div>
+
+    @if (stats(); as stats) {
+      <div class="stat-cards">
+        <div class="stat-card">
+          <span class="material-symbols-outlined stat-icon">event_available</span>
+          <div class="stat-value headline-lg">{{ stats.totalBookings }}</div>
+          <div class="label-sm text-muted">Total Bookings</div>
+        </div>
+        <div class="stat-card">
+          <span class="material-symbols-outlined stat-icon revenue">attach_money</span>
+          <div class="stat-value headline-lg">${{ stats.totalRevenue | number:'1.0-0' }}</div>
+          <div class="label-sm text-muted">Total Revenue</div>
+        </div>
+        <div class="stat-card">
+          <span class="material-symbols-outlined stat-icon upcoming">upcoming</span>
+          <div class="stat-value headline-lg">{{ stats.upcomingBookings }}</div>
+          <div class="label-sm text-muted">Upcoming</div>
+        </div>
+        <div class="stat-card">
+          <span class="material-symbols-outlined stat-icon rate">payments</span>
+          <div class="stat-value headline-lg">${{ stats.hourlyRate }}/hr</div>
+          <div class="label-sm text-muted">Hourly Rate</div>
+        </div>
+      </div>
+
+      <div class="charts-grid">
+        <app-bookings-chart [data]="stats.bookingsByMonth" />
+        <app-revenue-chart [data]="stats.revenueByMonth" />
+      </div>
+    } @else {
+      <div class="loading">
+        <span class="material-symbols-outlined spinning">progress_activity</span>
+        <p>Loading dashboard...</p>
+      </div>
+    }
+  </main>
+</div>

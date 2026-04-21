@@ -1,0 +1,40 @@
+.quote-section {
+  background: var(--surface-container);
+  padding: 6rem 2rem;
+  text-align: center;
+
+  .container {
+    max-width: 800px;
+  }
+}
+
+.quote-icon {
+  font-size: 2.5rem;
+  color: var(--primary);
+  margin-bottom: 1.5rem;
+  display: block;
+}
+
+blockquote {
+  font-family: 'Noto Serif', serif;
+  color: var(--on-surface);
+  margin-bottom: 2rem;
+
+  em {
+    font-style: italic;
+    color: var(--emerald);
+  }
+}
+
+.quote-divider {
+  width: 3rem;
+  height: 3px;
+  background: var(--primary);
+  margin: 0 auto;
+  border-radius: 2px;
+}
+
+@media (max-width: 640px) {
+  .quote-section { padding: 4rem 1.25rem; }
+  blockquote { font-size: 1.75rem; }
+}

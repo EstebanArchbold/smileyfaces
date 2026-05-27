@@ -1,0 +1,65 @@
+services:
+  # ─── Base de datos PostgreSQL ───────────────────────────────────────────────
+  smileyfaces-db:
+    image: postgres:16-alpine
+    container_name: smileyfaces-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: smileyfaces
+      POSTGRES_USER: smileyfaces
+      POSTGRES_PASSWORD: ${SMILEYFACES_DB_PASSWORD}
+    volumes:
+      - smileyfaces_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U smileyfaces"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - proxy
+
+  # ─── API / Backend (Node.js + Express) ──────────────────────────────────────
+  smileyfaces-api:
+    build: ./backend
+    container_name: smileyfaces-api
+    restart: unless-stopped
+    depends_on:
+      smileyfaces-db:
+        condition: service_healthy
+    environment:
+      PORT: 3001
+      DATABASE_URL: postgresql://smileyfaces:${SMILEYFACES_DB_PASSWORD}@smileyfaces-db:5432/smileyfaces
+      JWT_SECRET: ${JWT_SECRET}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD_HASH: ${ADMIN_PASSWORD_HASH}
+      GOOGLE_CLIENT_ID: your-google-client-id
+      GOOGLE_CLIENT_SECRET: your-google-client-secret
+      GOOGLE_REFRESH_TOKEN: your-google-refresh-token
+      GOOGLE_CALENDAR_ID: primary
+    volumes:
+      - smileyfaces_uploads:/app/uploads
+    networks:
+      - proxy
+
+  # ─── Frontend (Angular → Nginx) ─────────────────────────────────────────────
+  smileyfaces-frontend:
+    build: ./frontend
+    container_name: smileyfaces-frontend
+    restart: unless-stopped
+    ports:
+      - "3080:80"        # Acceso directo: http://100.110.144.73:3080
+    depends_on:
+      - smileyfaces-api
+    networks:
+      - proxy
+
+# ─── Volúmenes persistentes ───────────────────────────────────────────────────
+volumes:
+  smileyfaces_db_data:
+  smileyfaces_uploads:
+
+# ─── Red compartida (ya existe en el servidor) ────────────────────────────────
+networks:
+  proxy:
+    external: true
+    name: proxy

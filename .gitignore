@@ -1,0 +1,27 @@
+# ─── Dependencias ─────────────────────────────────────────────────────────────
+node_modules/
+.npm/
+
+# ─── Builds ───────────────────────────────────────────────────────────────────
+dist/
+backend/dist/
+frontend/dist/
+
+# ─── Variables de entorno (NUNCA subir al repo) ────────────────────────────────
+.env
+*.env.local
+
+# ─── Base de datos local ───────────────────────────────────────────────────────
+backend/data/
+*.db
+*.db-shm
+*.db-wal
+
+# ─── Angular cache ────────────────────────────────────────────────────────────
+.angular/
+
+# ─── OS / Editor ──────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/
+*.log

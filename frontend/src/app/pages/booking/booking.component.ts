@@ -1,7 +1,8 @@
-import { Component, signal, computed } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { BookingService, CreateBookingDto } from '../../core/services/booking.service';
+import { EventTypeService } from '../../core/services/event-type.service';
 
 interface CalendarDay {
   day: number;
@@ -16,7 +17,7 @@ interface CalendarDay {
   templateUrl: './booking.component.html',
   styleUrl: './booking.component.scss'
 })
-export class BookingComponent {
+export class BookingComponent implements OnInit {
   form: FormGroup;
 
   currentMonth = signal(new Date());
@@ -27,12 +28,12 @@ export class BookingComponent {
   success = signal(false);
   error = signal<string | null>(null);
 
-  services = [
+  services = signal<{ value: string; label: string; icon: string }[]>([
     { value: 'private_events', label: 'Private Events', icon: 'celebration' },
     { value: 'editorial_glow', label: 'Editorial Glow', icon: 'auto_awesome' },
     { value: 'bridal', label: 'Bridal', icon: 'favorite' },
     { value: 'other', label: 'Other', icon: 'palette' },
-  ];
+  ]);
 
   timeSlots = [
     { start: '09:00', end: '11:00', label: '9:00 AM — 11:00 AM' },
@@ -51,12 +52,22 @@ export class BookingComponent {
     return d.toLocaleString('default', { month: 'long', year: 'numeric' });
   });
 
-  constructor(private fb: FormBuilder, private bookingService: BookingService) {
+  constructor(private fb: FormBuilder, private bookingService: BookingService, private eventTypeService: EventTypeService) {
     this.form = this.fb.group({
       client_name: ['', Validators.required],
       client_email: ['', [Validators.required, Validators.email]],
       client_phone: [''],
       notes: [''],
+    });
+  }
+
+  ngOnInit() {
+    this.eventTypeService.getAll().subscribe(types => {
+      if (types.length === 0) return;
+      this.services.set(types.map(t => ({ value: t.value, label: t.label, icon: t.icon || 'palette' })));
+      if (!types.some(t => t.value === this.selectedService())) {
+        this.selectedService.set(types[0].value);
+      }
     });
   }
 

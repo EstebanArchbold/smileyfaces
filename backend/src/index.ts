@@ -9,6 +9,7 @@ import authRoutes from './routes/auth.routes';
 import bookingsRoutes from './routes/bookings.routes';
 import galleryRoutes from './routes/gallery.routes';
 import settingsRoutes from './routes/settings.routes';
+import eventTypesRoutes from './routes/event-types.routes';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -23,6 +24,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/bookings', bookingsRoutes);
 app.use('/api/gallery', galleryRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/event-types', eventTypesRoutes);
 
 // Health check
 app.get('/api/health', (_req, res) => {

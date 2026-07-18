@@ -43,6 +43,22 @@ export async function initDatabase(): Promise<Pool> {
 
       INSERT INTO settings (key, value) VALUES ('hourly_rate', '80')
       ON CONFLICT (key) DO NOTHING;
+
+      CREATE TABLE IF NOT EXISTS event_types (
+        id TEXT PRIMARY KEY,
+        value TEXT UNIQUE NOT NULL,
+        label TEXT NOT NULL,
+        icon TEXT DEFAULT 'palette',
+        display_order INTEGER DEFAULT 0,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      INSERT INTO event_types (id, value, label, icon, display_order) VALUES
+        ('et-private-events', 'private_events', 'Private Events', 'celebration', 1),
+        ('et-editorial-glow', 'editorial_glow', 'Editorial Glow', 'auto_awesome', 2),
+        ('et-bridal', 'bridal', 'Bridal', 'favorite', 3),
+        ('et-other', 'other', 'Other', 'palette', 4)
+      ON CONFLICT (id) DO NOTHING;
     `);
   } finally {
     client.release();

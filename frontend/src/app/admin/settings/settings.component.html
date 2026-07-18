@@ -31,6 +31,97 @@
     </div>
 
     <div class="settings-card">
+      <h3 class="title-lg">Hero Image</h3>
+      <p class="body-sm text-muted settings-desc">This photo is displayed in the hero section of the home page.</p>
+
+      <div class="hero-image-row">
+        @if (heroPreview()) {
+          <img class="hero-thumb" [src]="heroPreview()" alt="New hero image preview">
+        } @else if (heroImage()) {
+          <img class="hero-thumb" [src]="heroImage()" alt="Current hero image">
+        } @else {
+          <div class="hero-thumb hero-thumb-empty">
+            <span class="material-symbols-outlined">image</span>
+          </div>
+        }
+        <div class="hero-image-actions">
+          <input type="file" accept="image/*" (change)="onHeroFileSelected($event)">
+          <button class="save-btn" (click)="uploadHeroImage()" [disabled]="!heroFile || heroUploading()">
+            @if (heroUploading()) { Uploading... } @else { Upload Image }
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-card">
+      <h3 class="title-lg">Site Content</h3>
+      <p class="body-sm text-muted settings-desc">Edit the texts shown on the home page. Each field allows a maximum of 50 words.</p>
+
+      @for (field of contentFields; track field.key) {
+        <div class="setting-field">
+          <label class="label-sm" [for]="field.key">{{ field.label }}</label>
+          @if (field.multiline) {
+            <textarea [id]="field.key" rows="3" [(ngModel)]="content[field.key]" class="content-input" [class.invalid]="overLimit(content[field.key])"></textarea>
+          } @else {
+            <input [id]="field.key" type="text" [(ngModel)]="content[field.key]" class="content-input" [class.invalid]="overLimit(content[field.key])">
+          }
+          <div class="field-meta">
+            @if (field.hint) { <span class="body-sm text-muted">{{ field.hint }}</span> }
+            <span class="word-count" [class.over]="overLimit(content[field.key])">{{ wordCount(content[field.key]) }}/50 words</span>
+          </div>
+        </div>
+      }
+
+      <div class="settings-actions">
+        <button class="save-btn" (click)="saveContent()" [disabled]="contentSaving()">
+          @if (contentSaving()) { Saving... } @else { Save Content }
+        </button>
+        @if (contentSaved()) {
+          <span class="save-success">
+            <span class="material-symbols-outlined">check_circle</span>
+            Content saved
+          </span>
+        }
+        @if (contentError()) {
+          <span class="save-error">{{ contentError() }}</span>
+        }
+      </div>
+    </div>
+
+    <div class="settings-card">
+      <h3 class="title-lg">Event Types</h3>
+      <p class="body-sm text-muted settings-desc">These are the services clients can choose when booking. Icons use Material Symbols names (e.g. celebration, favorite, palette).</p>
+
+      <div class="event-type-list">
+        @for (type of eventTypes(); track type.id) {
+          <div class="event-type-row">
+            <span class="material-symbols-outlined type-icon">{{ type.icon || 'palette' }}</span>
+            <input type="text" [(ngModel)]="type.label" placeholder="Label">
+            <input type="text" class="icon-input" [(ngModel)]="type.icon" placeholder="Icon">
+            <button class="icon-btn" title="Save" (click)="updateEventType(type)">
+              <span class="material-symbols-outlined">save</span>
+            </button>
+            <button class="icon-btn danger" title="Delete" (click)="deleteEventType(type)">
+              <span class="material-symbols-outlined">delete</span>
+            </button>
+          </div>
+        }
+      </div>
+
+      <div class="event-type-row add-row">
+        <span class="material-symbols-outlined type-icon">{{ newTypeIcon || 'palette' }}</span>
+        <input type="text" [(ngModel)]="newTypeLabel" placeholder="New event type name">
+        <input type="text" class="icon-input" [(ngModel)]="newTypeIcon" placeholder="Icon">
+        <button class="save-btn small" (click)="addEventType()" [disabled]="!newTypeLabel.trim() || typeSaving()">
+          @if (typeSaving()) { Adding... } @else { Add }
+        </button>
+      </div>
+      @if (typeError()) {
+        <span class="save-error">{{ typeError() }}</span>
+      }
+    </div>
+
+    <div class="settings-card">
       <h3 class="title-lg">Pricing</h3>
       <p class="body-sm text-muted settings-desc">Set your hourly rate. This is used to calculate revenue in the dashboard.</p>
 
@@ -61,13 +152,23 @@
       <p class="body-sm text-muted settings-desc">
         Connect your Google Calendar to automatically sync confirmed bookings.
       </p>
-      <div class="gcal-status">
-        <span class="material-symbols-outlined status-icon pending">cloud_off</span>
-        <div>
-          <span class="body-md">Not configured</span>
-          <p class="body-sm text-muted">Update the .env file in the backend with your Google Calendar API credentials.</p>
+      @if (calendarConfigured()) {
+        <div class="gcal-status">
+          <span class="material-symbols-outlined status-icon connected">cloud_done</span>
+          <div>
+            <span class="body-md">Connected</span>
+            <p class="body-sm text-muted">Confirmed bookings are synced to your Google Calendar automatically.</p>
+          </div>
         </div>
-      </div>
+      } @else {
+        <div class="gcal-status">
+          <span class="material-symbols-outlined status-icon pending">cloud_off</span>
+          <div>
+            <span class="body-md">Not configured</span>
+            <p class="body-sm text-muted">Set GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN and GOOGLE_CALENDAR_ID in the server .env, then restart the API.</p>
+          </div>
+        </div>
+      }
     </div>
 
     <div class="settings-card">

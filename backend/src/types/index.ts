@@ -3,7 +3,7 @@ export interface Booking {
   client_name: string;
   client_email: string;
   client_phone: string | null;
-  service_type: 'private_events' | 'editorial_glow' | 'bridal' | 'other';
+  service_type: string;
   date: string;
   start_time: string;
   end_time: string;
@@ -19,6 +19,15 @@ export interface GalleryItem {
   title: string | null;
   category: string;
   image_path: string;
+  display_order: number;
+  created_at: string;
+}
+
+export interface EventType {
+  id: string;
+  value: string;
+  label: string;
+  icon: string;
   display_order: number;
   created_at: string;
 }

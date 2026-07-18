@@ -20,7 +20,7 @@
       <div class="booking-step">
         <h3 class="headline-sm">Choose Your Service</h3>
         <div class="service-pills">
-          @for (service of services; track service.value) {
+          @for (service of services(); track service.value) {
             <button
               class="service-pill"
               [class.active]="selectedService() === service.value"

@@ -1,12 +1,15 @@
 import { getCalendarClient, isConfigured } from '../config/google-calendar';
+import { getDatabase } from '../config/database';
 import { Booking } from '../types';
 
-const SERVICE_LABELS: Record<string, string> = {
-  private_events: 'Private Event',
-  editorial_glow: 'Editorial Glow',
-  bridal: 'Bridal',
-  other: 'Session',
-};
+async function getServiceLabel(serviceType: string): Promise<string> {
+  try {
+    const result = await getDatabase().query('SELECT label FROM event_types WHERE value = $1', [serviceType]);
+    return result.rows[0]?.label || 'Session';
+  } catch {
+    return 'Session';
+  }
+}
 
 export async function createCalendarEvent(booking: Booking): Promise<string | null> {
   if (!isConfigured()) {
@@ -18,7 +21,7 @@ export async function createCalendarEvent(booking: Booking): Promise<string | nu
   if (!calendar) return null;
 
   try {
-    const serviceLabel = SERVICE_LABELS[booking.service_type] || 'Session';
+    const serviceLabel = await getServiceLabel(booking.service_type);
     const startDateTime = `${booking.date}T${booking.start_time}:00`;
     const endDateTime = `${booking.date}T${booking.end_time}:00`;
 

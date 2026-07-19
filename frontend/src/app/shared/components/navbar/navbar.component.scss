@@ -30,8 +30,10 @@ nav {
   text-decoration: none;
   color: var(--emerald);
 
-  .logo-icon {
-    font-size: 1.75rem;
+  .logo-img {
+    height: 2.5rem;
+    width: 2.5rem;
+    object-fit: contain;
   }
 
   .logo-text {

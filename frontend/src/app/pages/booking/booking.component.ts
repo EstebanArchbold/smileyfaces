@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { BookingService, CreateBookingDto } from '../../core/services/booking.service';
 import { EventTypeService } from '../../core/services/event-type.service';
@@ -69,7 +69,12 @@ export class BookingComponent implements OnInit, OnDestroy {
     return d.toLocaleString('default', { month: 'long', year: 'numeric' });
   });
 
-  constructor(private fb: FormBuilder, private bookingService: BookingService, private eventTypeService: EventTypeService) {
+  constructor(
+    private fb: FormBuilder,
+    private bookingService: BookingService,
+    private eventTypeService: EventTypeService,
+    private route: ActivatedRoute
+  ) {
     this.form = this.fb.group({
       client_name: ['', Validators.required],
       client_email: ['', [Validators.required, Validators.email]],
@@ -89,6 +94,25 @@ export class BookingComponent implements OnInit, OnDestroy {
         this.selectedService.set(types[0].value);
       }
     });
+
+    // Event type preselected from the home page (?service=private)
+    const serviceParam = this.route.snapshot.queryParamMap.get('service');
+    if (serviceParam) {
+      this.selectedService.set(serviceParam);
+    }
+
+    // Date preselected from the home-page calendar (?date=YYYY-MM-DD)
+    const dateParam = this.route.snapshot.queryParamMap.get('date');
+    if (dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam)) {
+      const [y, m, d] = dateParam.split('-').map(Number);
+      const date = new Date(y, m - 1, d);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (!isNaN(date.getTime()) && date >= today) {
+        this.currentMonth.set(new Date(y, m - 1, 1));
+        this.selectDate({ day: d, currentMonth: true, date });
+      }
+    }
   }
 
   selectService(value: string) {

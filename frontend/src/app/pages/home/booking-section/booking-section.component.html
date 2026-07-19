@@ -6,52 +6,57 @@
         <p class="body-lg">Select your preferred date for a private session. We specialize in intimate gatherings, brand launches, and refined celebrations.</p>
 
         <div class="service-cards">
-          <div class="service-card">
-            <div class="service-icon">
-              <span class="material-symbols-outlined">celebration</span>
-            </div>
-            <div>
-              <h4 class="title-lg">Private Events</h4>
-              <p class="body-sm text-muted">Elevated artistry for birthdays and intimate gatherings.</p>
-            </div>
-          </div>
-          <div class="service-card">
-            <div class="service-icon">
-              <span class="material-symbols-outlined">auto_awesome</span>
-            </div>
-            <div>
-              <h4 class="title-lg">Editorial Glow</h4>
-              <p class="body-sm text-muted">High-fashion makeup and avant-garde face painting.</p>
-            </div>
-          </div>
+          @for (type of eventTypes(); track type.id) {
+            <button
+              class="service-card"
+              [class.selected]="selectedType() === type.value"
+              (click)="selectType(type.value)">
+              <div class="service-icon">
+                <span class="material-symbols-outlined">{{ type.icon || 'palette' }}</span>
+              </div>
+              <div>
+                <h4 class="title-lg">{{ type.label }}</h4>
+              </div>
+              @if (selectedType() === type.value) {
+                <span class="material-symbols-outlined selected-check">check_circle</span>
+              }
+            </button>
+          }
         </div>
       </div>
 
       <div class="booking-cta-area">
         <div class="calendar-preview">
           <div class="calendar-header">
-            <span class="material-symbols-outlined">chevron_left</span>
-            <span class="label-md">March 2026</span>
-            <span class="material-symbols-outlined">chevron_right</span>
+            <button class="cal-nav" (click)="prevMonth()" aria-label="Previous month">
+              <span class="material-symbols-outlined">chevron_left</span>
+            </button>
+            <span class="label-md">{{ monthLabel() }}</span>
+            <button class="cal-nav" (click)="nextMonth()" aria-label="Next month">
+              <span class="material-symbols-outlined">chevron_right</span>
+            </button>
           </div>
           <div class="calendar-days">
-            <span class="day-label">Sun</span><span class="day-label">Mon</span><span class="day-label">Tue</span>
-            <span class="day-label">Wed</span><span class="day-label">Thu</span><span class="day-label">Fri</span><span class="day-label">Sat</span>
-            <span class="day other">1</span><span class="day other">2</span><span class="day other">3</span>
-            <span class="day other">4</span><span class="day other">5</span><span class="day other">6</span><span class="day other">7</span>
-            <span class="day">8</span><span class="day">9</span><span class="day">10</span>
-            <span class="day">11</span><span class="day">12</span><span class="day">13</span><span class="day">14</span>
-            <span class="day">15</span><span class="day">16</span><span class="day">17</span>
-            <span class="day">18</span><span class="day">19</span><span class="day">20</span><span class="day">21</span>
-            <span class="day">22</span><span class="day">23</span><span class="day active">24</span>
-            <span class="day">25</span><span class="day">26</span><span class="day">27</span><span class="day">28</span>
+            @for (label of dayLabels; track label) {
+              <span class="day-label">{{ label }}</span>
+            }
+            @for (day of calendarDays(); track day.date.toISOString()) {
+              <button
+                class="day"
+                [class.other]="!day.currentMonth || isPast(day)"
+                [class.active]="isSelected(day) || (isToday(day) && !selectedDay())"
+                [disabled]="!day.currentMonth || isPast(day)"
+                (click)="selectDay(day)">
+                {{ day.day }}
+              </button>
+            }
           </div>
           <div class="time-slot">
-            <span class="label-sm">Selected Time</span>
-            <span class="headline-sm">14:30 PM — 16:00 PM</span>
+            <span class="label-sm">{{ selectedDay() ? 'Selected Day' : 'Pick a Day' }}</span>
+            <span class="headline-sm">{{ selectedDayLabel() }}</span>
           </div>
         </div>
-        <a routerLink="/booking" class="confirm-btn">Confirm Appointment</a>
+        <button class="confirm-btn" (click)="confirm()">Confirm Appointment</button>
       </div>
     </div>
   </div>

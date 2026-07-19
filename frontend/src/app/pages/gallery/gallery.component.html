@@ -6,7 +6,7 @@
     </div>
 
     <div class="filter-pills">
-      @for (cat of categories; track cat.value) {
+      @for (cat of categories(); track cat.value) {
         <button
           class="filter-pill"
           [class.active]="activeCategory() === cat.value"

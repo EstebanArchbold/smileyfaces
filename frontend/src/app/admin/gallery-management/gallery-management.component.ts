@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { GalleryService, GalleryItem } from '../../core/services/gallery.service';
+import { EventTypeService } from '../../core/services/event-type.service';
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
@@ -16,20 +17,25 @@ export class GalleryManagementComponent implements OnInit {
   items = signal<GalleryItem[]>([]);
   uploading = signal(false);
   title = '';
-  category = 'editorial';
+  category = 'private';
   selectedFile: File | null = null;
 
-  categories = [
-    { value: 'private_events', label: 'Private Events' },
-    { value: 'editorial', label: 'Editorial' },
-    { value: 'bridal', label: 'Bridal' },
-    { value: 'other', label: 'Other' },
-  ];
+  categories = signal<{ value: string; label: string }[]>([]);
 
-  constructor(private galleryService: GalleryService, private authService: AuthService) {}
+  constructor(
+    private galleryService: GalleryService,
+    private eventTypeService: EventTypeService,
+    private authService: AuthService
+  ) {}
 
   ngOnInit() {
     this.loadGallery();
+    this.eventTypeService.getAll().subscribe(types => {
+      this.categories.set(types.map(t => ({ value: t.value, label: t.label })));
+      if (types.length > 0 && !types.some(t => t.value === this.category)) {
+        this.category = types[0].value;
+      }
+    });
   }
 
   loadGallery() {

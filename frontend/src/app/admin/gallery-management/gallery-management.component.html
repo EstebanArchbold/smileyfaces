@@ -41,7 +41,7 @@
           <div class="form-field">
             <label class="label-sm">Category</label>
             <select [(ngModel)]="category">
-              @for (cat of categories; track cat.value) {
+              @for (cat of categories(); track cat.value) {
                 <option [value]="cat.value">{{ cat.label }}</option>
               }
             </select>

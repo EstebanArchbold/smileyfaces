@@ -1,6 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GalleryService, GalleryItem } from '../../core/services/gallery.service';
+import { EventTypeService } from '../../core/services/event-type.service';
 import { LightboxComponent } from '../../shared/components/lightbox/lightbox.component';
 
 @Component({
@@ -16,17 +17,18 @@ export class GalleryComponent implements OnInit {
   lightboxVisible = signal(false);
   lightboxIndex = signal(0);
 
-  categories = [
-    { value: 'all', label: 'All' },
-    { value: 'private_events', label: 'Private Events' },
-    { value: 'editorial', label: 'Editorial' },
-    { value: 'bridal', label: 'Bridal' },
-  ];
+  categories = signal<{ value: string; label: string }[]>([{ value: 'all', label: 'All' }]);
 
-  constructor(private galleryService: GalleryService) {}
+  constructor(private galleryService: GalleryService, private eventTypeService: EventTypeService) {}
 
   ngOnInit() {
     this.loadGallery();
+    this.eventTypeService.getAll().subscribe(types => {
+      this.categories.set([
+        { value: 'all', label: 'All' },
+        ...types.map(t => ({ value: t.value, label: t.label })),
+      ]);
+    });
   }
 
   filterBy(category: string) {

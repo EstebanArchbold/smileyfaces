@@ -25,9 +25,15 @@
   </aside>
 
   <main class="admin-main">
-    <div class="admin-header">
-      <h1 class="headline-lg">Bookings</h1>
-      <p class="body-md text-muted">Manage all client appointments.</p>
+    <div class="admin-header header-with-action">
+      <div>
+        <h1 class="headline-lg">Bookings</h1>
+        <p class="body-md text-muted">Manage all client appointments.</p>
+      </div>
+      <button class="blank-form-btn" (click)="copyBlankFormLink()" title="Form for clients you already talked to — they enter directly as confirmed">
+        <span class="material-symbols-outlined">{{ blankCopied() ? 'check' : 'add_link' }}</span>
+        {{ blankCopied() ? 'Copied!' : 'Copy Client Form Link' }}
+      </button>
     </div>
 
     <div class="filter-bar">
@@ -50,41 +56,99 @@
           <tr>
             <th class="label-sm">Date</th>
             <th class="label-sm">Client</th>
+            <th class="label-sm">Address</th>
             <th class="label-sm">Service</th>
             <th class="label-sm">Time</th>
+            <th class="label-sm">Kids</th>
+            <th class="label-sm">Arrival</th>
+            <th class="label-sm">Hours</th>
+            <th class="label-sm">Theme</th>
+            <th class="label-sm">Bday Kid</th>
+            <th class="label-sm">Ages</th>
+            <th class="label-sm">Allergies</th>
+            <th class="label-sm">Comments</th>
             <th class="label-sm">Status</th>
             <th class="label-sm">Actions</th>
           </tr>
         </thead>
         <tbody>
           @for (booking of bookings(); track booking.id) {
-            <tr>
-              <td>{{ booking.date }}</td>
+            <tr class="booking-row" (click)="toggleExpand(booking.id)" [class.expanded]="expandedId() === booking.id">
+              <td>{{ formatDate(booking.date) }}</td>
               <td>
                 <div class="client-info">
                   <span class="body-md">{{ booking.client_name }}</span>
                   <span class="body-sm text-muted">{{ booking.client_email }}</span>
+                  @if (booking.client_phone) {
+                    <span class="body-sm text-muted">{{ booking.client_phone }}</span>
+                  }
                 </div>
               </td>
+              <td class="address-cell">{{ booking.address || '—' }}</td>
               <td>{{ getServiceLabel(booking.service_type) }}</td>
-              <td>{{ booking.start_time }} — {{ booking.end_time }}</td>
+              <td class="nowrap">{{ booking.start_time }} — {{ booking.end_time }}</td>
+              <td>{{ booking.num_kids || '—' }}</td>
+              <td class="clip-cell" [title]="booking.arrival_time || ''">{{ booking.arrival_time || '—' }}</td>
+              <td class="clip-cell" [title]="booking.hours_booked || ''">{{ booking.hours_booked || '—' }}</td>
+              <td class="clip-cell" [title]="booking.theme || ''">{{ booking.theme || '—' }}</td>
+              <td class="clip-cell" [title]="booking.bday_kid_name || ''">{{ booking.bday_kid_name || '—' }}</td>
+              <td class="clip-cell" [title]="booking.kids_age_range || ''">{{ booking.kids_age_range || '—' }}</td>
+              <td class="clip-cell" [title]="booking.allergies || ''">{{ booking.allergies || '—' }}</td>
+              <td class="clip-cell" [title]="booking.comments || ''">{{ booking.comments || '—' }}</td>
               <td>
-                <span class="status-badge" [attr.data-status]="booking.status">
-                  {{ booking.status }}
-                </span>
+                <div class="status-cell">
+                  <span class="status-badge" [attr.data-status]="booking.status">
+                    {{ booking.status }}
+                  </span>
+                  @if (booking.confirmation_submitted_at) {
+                    <span class="material-symbols-outlined details-received" title="Event details received">task_alt</span>
+                  }
+                </div>
               </td>
-              <td>
-                <select
-                  class="action-select"
-                  [ngModel]="booking.status"
-                  (ngModelChange)="updateStatus(booking, $event)">
-                  <option value="pending">Pending</option>
-                  <option value="confirmed">Confirmed</option>
-                  <option value="completed">Completed</option>
-                  <option value="cancelled">Cancelled</option>
-                </select>
+              <td (click)="$event.stopPropagation()">
+                <div class="actions-cell">
+                  <select
+                    class="action-select"
+                    [ngModel]="booking.status"
+                    (ngModelChange)="updateStatus(booking, $event)">
+                    <option value="pending">Pending</option>
+                    <option value="confirmed">Confirmed</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
+                  </select>
+                  <button class="link-btn" title="Generate confirmation link" (click)="openLinkModal(booking, $event)">
+                    <span class="material-symbols-outlined">link</span>
+                  </button>
+                  <button class="link-btn" title="Change date / time" (click)="openEditModal(booking, $event)">
+                    <span class="material-symbols-outlined">edit_calendar</span>
+                  </button>
+                </div>
               </td>
             </tr>
+            @if (expandedId() === booking.id) {
+              <tr class="detail-row">
+                <td colspan="15">
+                  <div class="detail-grid">
+                    <div class="detail-item"><span class="label-sm text-muted"># of Kids</span><span class="body-md">{{ booking.num_kids || '—' }}</span></div>
+                    <div class="detail-item"><span class="label-sm text-muted">Duration</span><span class="body-md">{{ booking.duration || '—' }}</span></div>
+                    <div class="detail-item"><span class="label-sm text-muted">Arrival Time</span><span class="body-md">{{ booking.arrival_time || '—' }}</span></div>
+                    <div class="detail-item"><span class="label-sm text-muted">Hours Booked</span><span class="body-md">{{ booking.hours_booked || '—' }}</span></div>
+                    <div class="detail-item"><span class="label-sm text-muted">Theme</span><span class="body-md">{{ booking.theme || '—' }}</span></div>
+                    <div class="detail-item"><span class="label-sm text-muted">Birthday Kid</span><span class="body-md">{{ booking.bday_kid_name || '—' }}</span></div>
+                    <div class="detail-item"><span class="label-sm text-muted">Kids Age Range</span><span class="body-md">{{ booking.kids_age_range || '—' }}</span></div>
+                    <div class="detail-item"><span class="label-sm text-muted">Allergies</span><span class="body-md">{{ booking.allergies || '—' }}</span></div>
+                    <div class="detail-item wide"><span class="label-sm text-muted">Full Address</span><span class="body-md">{{ booking.address || '—' }}</span></div>
+                    <div class="detail-item wide"><span class="label-sm text-muted">Notes (booking)</span><span class="body-md">{{ booking.notes || '—' }}</span></div>
+                    <div class="detail-item wide"><span class="label-sm text-muted">Questions & Comments</span><span class="body-md">{{ booking.comments || '—' }}</span></div>
+                    <div class="detail-item"><span class="label-sm text-muted">Event Details Form</span>
+                      <span class="body-md">
+                        @if (booking.confirmation_submitted_at) { Received } @else { Not received yet }
+                      </span>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            }
           }
         </tbody>
       </table>
@@ -99,6 +163,98 @@
         <button (click)="nextPage()" [disabled]="page() === totalPages()" class="page-btn">
           <span class="material-symbols-outlined">chevron_right</span>
         </button>
+      </div>
+    }
+
+    @if (linkBooking(); as lb) {
+      <div class="modal-backdrop" (click)="closeLinkModal()">
+        <div class="modal-card" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h3 class="title-lg">Confirmation Link</h3>
+            <button class="close-btn" (click)="closeLinkModal()">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+          <p class="body-sm text-muted modal-desc">
+            Review the info below (it pre-fills the client's form so they don't type it twice), generate the link, and send it manually via WhatsApp, Instagram, Facebook, etc.
+          </p>
+
+          <div class="modal-field">
+            <label class="label-sm">Client Name</label>
+            <input type="text" [(ngModel)]="linkName">
+          </div>
+          <div class="modal-field">
+            <label class="label-sm">Event Address / Location</label>
+            <input type="text" [(ngModel)]="linkAddress">
+          </div>
+          <div class="modal-field">
+            <label class="label-sm"># of Kids</label>
+            <input type="text" [(ngModel)]="linkKids">
+          </div>
+
+          <div class="modal-actions">
+            <button class="generate-btn" (click)="generateLink()">Generate Link</button>
+          </div>
+
+          @if (generatedLink(); as link) {
+            <div class="generated-link">
+              <input type="text" readonly [value]="link" (click)="$any($event.target).select()">
+              <button class="copy-btn" (click)="copyLink()">
+                <span class="material-symbols-outlined">{{ copied() ? 'check' : 'content_copy' }}</span>
+                {{ copied() ? 'Copied!' : 'Copy' }}
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    @if (editBooking(); as eb) {
+      <div class="modal-backdrop" (click)="closeEditModal()">
+        <div class="modal-card" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h3 class="title-lg">Change Date / Time</h3>
+            <button class="close-btn" (click)="closeEditModal()">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+          <p class="body-sm text-muted modal-desc">
+            {{ eb.client_name }} — {{ getServiceLabel(eb.service_type) }}. If this booking is synced with Google Calendar, the event updates automatically.
+          </p>
+
+          <div class="modal-field">
+            <label class="label-sm">Date</label>
+            <input type="date" [(ngModel)]="editDate">
+          </div>
+          <div class="modal-field-row">
+            <div class="modal-field">
+              <label class="label-sm">Start Time</label>
+              <select [(ngModel)]="editStart">
+                @for (h of hourOptions; track h) {
+                  <option [value]="h">{{ h }}</option>
+                }
+              </select>
+            </div>
+            <div class="modal-field">
+              <label class="label-sm">End Time</label>
+              <select [(ngModel)]="editEnd">
+                @for (h of hourOptions; track h) {
+                  <option [value]="h">{{ h }}</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          @if (editError()) {
+            <div class="modal-error">{{ editError() }}</div>
+          }
+
+          <div class="modal-actions">
+            <button class="generate-btn" (click)="saveTimes()" [disabled]="editSaving()">
+              @if (editSaving()) { Saving... } @else { Save Changes }
+            </button>
+          </div>
+        </div>
       </div>
     }
   </main>

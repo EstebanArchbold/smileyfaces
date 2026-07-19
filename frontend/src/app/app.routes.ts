@@ -19,6 +19,14 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/about/about.component').then(m => m.AboutComponent),
   },
   {
+    path: 'confirm/:id',
+    loadComponent: () => import('./pages/confirmation/confirmation.component').then(m => m.ConfirmationComponent),
+  },
+  {
+    path: 'confirm',
+    loadComponent: () => import('./pages/confirmation/confirmation.component').then(m => m.ConfirmationComponent),
+  },
+  {
     path: 'admin/login',
     loadComponent: () => import('./admin/login/login.component').then(m => m.LoginComponent),
   },

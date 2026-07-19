@@ -16,11 +16,22 @@ export async function initDatabase(): Promise<Pool> {
         client_name TEXT NOT NULL,
         client_email TEXT NOT NULL,
         client_phone TEXT,
+        address TEXT,
         service_type TEXT NOT NULL,
         date TEXT NOT NULL,
         start_time TEXT NOT NULL,
         end_time TEXT NOT NULL,
         notes TEXT,
+        num_kids TEXT,
+        duration TEXT,
+        theme TEXT,
+        arrival_time TEXT,
+        hours_booked TEXT,
+        bday_kid_name TEXT,
+        kids_age_range TEXT,
+        allergies TEXT,
+        comments TEXT,
+        confirmation_submitted_at TIMESTAMPTZ,
         status TEXT DEFAULT 'pending',
         google_event_id TEXT,
         created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -41,6 +52,18 @@ export async function initDatabase(): Promise<Pool> {
         value TEXT NOT NULL
       );
 
+      ALTER TABLE bookings ADD COLUMN IF NOT EXISTS address TEXT;
+      ALTER TABLE bookings ADD COLUMN IF NOT EXISTS num_kids TEXT;
+      ALTER TABLE bookings ADD COLUMN IF NOT EXISTS duration TEXT;
+      ALTER TABLE bookings ADD COLUMN IF NOT EXISTS theme TEXT;
+      ALTER TABLE bookings ADD COLUMN IF NOT EXISTS arrival_time TEXT;
+      ALTER TABLE bookings ADD COLUMN IF NOT EXISTS hours_booked TEXT;
+      ALTER TABLE bookings ADD COLUMN IF NOT EXISTS bday_kid_name TEXT;
+      ALTER TABLE bookings ADD COLUMN IF NOT EXISTS kids_age_range TEXT;
+      ALTER TABLE bookings ADD COLUMN IF NOT EXISTS allergies TEXT;
+      ALTER TABLE bookings ADD COLUMN IF NOT EXISTS comments TEXT;
+      ALTER TABLE bookings ADD COLUMN IF NOT EXISTS confirmation_submitted_at TIMESTAMPTZ;
+
       INSERT INTO settings (key, value) VALUES ('hourly_rate', '80')
       ON CONFLICT (key) DO NOTHING;
 
@@ -54,11 +77,11 @@ export async function initDatabase(): Promise<Pool> {
       );
 
       INSERT INTO event_types (id, value, label, icon, display_order) VALUES
-        ('et-private-events', 'private_events', 'Private Events', 'celebration', 1),
-        ('et-editorial-glow', 'editorial_glow', 'Editorial Glow', 'auto_awesome', 2),
-        ('et-bridal', 'bridal', 'Bridal', 'favorite', 3),
-        ('et-other', 'other', 'Other', 'palette', 4)
+        ('et-private', 'private', 'Private', 'celebration', 1),
+        ('et-public', 'public', 'Public', 'groups', 2)
       ON CONFLICT (id) DO NOTHING;
+
+      DELETE FROM event_types WHERE id IN ('et-private-events', 'et-editorial-glow', 'et-bridal', 'et-other');
     `);
   } finally {
     client.release();

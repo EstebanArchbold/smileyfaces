@@ -1,0 +1,145 @@
+<section class="confirmation-page section-padding">
+  <div class="container">
+    @if (success()) {
+      <div class="success-card">
+        <span class="material-symbols-outlined success-icon">celebration</span>
+        <h2 class="headline-lg">Thank You!</h2>
+        <p class="body-lg text-muted">Your event details have been received. We can't wait to make your celebration shine!</p>
+        <a routerLink="/" class="submit-btn back-home">Back to Home</a>
+      </div>
+    } @else {
+      <div class="confirmation-header">
+        <p class="label-sm text-muted">Almost There</p>
+        <h1 class="headline-lg">Confirm Your Event Details</h1>
+        <p class="body-md text-muted">
+          @if (clientName && !standalone) { Hi {{ clientName }}! }
+          Please complete the details below so we can prepare everything for your event@if (eventDate && !standalone) { on <strong>{{ eventDate }}</strong>}.
+        </p>
+      </div>
+
+      <form (ngSubmit)="submit()" class="confirmation-form">
+        @if (standalone) {
+          <div class="form-row">
+            <div class="form-field">
+              <label class="label-sm" for="clientName">Full Name *</label>
+              <input id="clientName" type="text" [(ngModel)]="clientName" name="clientName" placeholder="Your full name" required>
+            </div>
+            <div class="form-field">
+              <label class="label-sm" for="clientEmail">Email *</label>
+              <input id="clientEmail" type="email" [(ngModel)]="clientEmail" name="clientEmail" placeholder="your@email.com" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label class="label-sm" for="clientPhone">Phone Number</label>
+              <input id="clientPhone" type="tel" [(ngModel)]="clientPhone" name="clientPhone" placeholder="(optional)">
+            </div>
+            <div class="form-field">
+              <label class="label-sm" for="serviceType">Event Type *</label>
+              <select id="serviceType" [(ngModel)]="serviceType" name="serviceType">
+                @for (t of eventTypes(); track t.value) {
+                  <option [value]="t.value">{{ t.label }}</option>
+                }
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label class="label-sm" for="eventDate">Event Date *</label>
+              <input id="eventDate" type="date" [(ngModel)]="eventDate" name="eventDate" required>
+            </div>
+            <div class="form-field">
+              <label class="label-sm" for="startTime">Arrival / Start Time *</label>
+              <select id="startTime" [(ngModel)]="startTime" name="startTime" required>
+                <option value="" disabled>Select a time</option>
+                @for (h of hourOptions; track h.value) {
+                  <option [value]="h.value">{{ h.label }}</option>
+                }
+              </select>
+            </div>
+          </div>
+          <div class="form-field">
+            <label class="label-sm" for="hoursCount">How Many Hours Would You Like to Book? *</label>
+            <select id="hoursCount" [(ngModel)]="hoursCount" name="hoursCount" required>
+              <option value="" disabled>Select hours</option>
+              @for (h of hoursOptions; track h) {
+                <option [value]="h">{{ h }} hour{{ h === '1' ? '' : 's' }}</option>
+              }
+            </select>
+          </div>
+        }
+
+        <div class="form-field">
+          <label class="label-sm" for="address">Exact Address of the Event *</label>
+          <input id="address" type="text" [(ngModel)]="address" name="address" placeholder="Complete address" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label class="label-sm" for="numKids">Approximate Number of the Kids</label>
+            <input id="numKids" type="text" [(ngModel)]="numKids" name="numKids" placeholder="How many kids?">
+          </div>
+          @if (!standalone) {
+            <div class="form-field">
+              <label class="label-sm" for="arrivalTime">Arrival Time</label>
+              <input id="arrivalTime" type="text" [(ngModel)]="arrivalTime" name="arrivalTime" placeholder="What time would you like me to arrive?">
+            </div>
+          } @else {
+            <div class="form-field">
+              <label class="label-sm" for="theme2">Theme of the Event</label>
+              <input id="theme2" type="text" [(ngModel)]="theme" name="theme" placeholder="e.g. Superheroes, Princesses...">
+            </div>
+          }
+        </div>
+
+        @if (!standalone) {
+          <div class="form-field">
+            <label class="label-sm" for="hoursBooked">How Many Hours Would You Like to Book?</label>
+            <input id="hoursBooked" type="text" [(ngModel)]="hoursBooked" name="hoursBooked" placeholder="e.g. 3 hours">
+          </div>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label class="label-sm" for="theme">Theme of the Event</label>
+              <input id="theme" type="text" [(ngModel)]="theme" name="theme" placeholder="e.g. Superheroes, Princesses...">
+            </div>
+            <div class="form-field">
+              <label class="label-sm" for="ageRange">Kids Age Range</label>
+              <input id="ageRange" type="text" [(ngModel)]="kidsAgeRange" name="ageRange" placeholder="e.g. 4-8 years">
+            </div>
+          </div>
+        } @else {
+          <div class="form-field">
+            <label class="label-sm" for="ageRange2">Kids Age Range</label>
+            <input id="ageRange2" type="text" [(ngModel)]="kidsAgeRange" name="ageRange" placeholder="e.g. 4-8 years">
+          </div>
+        }
+
+        @if (showBdayKid()) {
+          <div class="form-field">
+            <label class="label-sm" for="bdayKid">Name of the Birthday Kid</label>
+            <input id="bdayKid" type="text" [(ngModel)]="bdayKidName" name="bdayKid" placeholder="Who's the star of the party?">
+          </div>
+        }
+
+        <div class="form-field">
+          <label class="label-sm" for="allergies">Allergies</label>
+          <textarea id="allergies" [(ngModel)]="allergies" name="allergies" rows="2" placeholder="Any allergies we should know about? (skin sensitivities, etc.)"></textarea>
+        </div>
+
+        <div class="form-field">
+          <label class="label-sm" for="comments">Questions and Comments</label>
+          <textarea id="comments" [(ngModel)]="comments" name="comments" rows="3" placeholder="Anything else you'd like to tell or ask us..."></textarea>
+        </div>
+
+        @if (error()) {
+          <div class="form-error">{{ error() }}</div>
+        }
+
+        <button type="submit" class="submit-btn" [disabled]="!canSubmit() || submitting()">
+          @if (submitting()) { Sending... } @else { Send Event Details }
+        </button>
+      </form>
+    }
+  </div>
+</section>

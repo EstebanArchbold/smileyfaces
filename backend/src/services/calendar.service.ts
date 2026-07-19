@@ -29,7 +29,8 @@ export async function createCalendarEvent(booking: Booking): Promise<string | nu
       calendarId: process.env.GOOGLE_CALENDAR_ID || 'primary',
       requestBody: {
         summary: `Smiley Faces - ${serviceLabel} - ${booking.client_name}`,
-        description: `Client: ${booking.client_name}\nEmail: ${booking.client_email}\nPhone: ${booking.client_phone || 'N/A'}\nService: ${serviceLabel}\nNotes: ${booking.notes || 'None'}`,
+        description: `Client: ${booking.client_name}\nEmail: ${booking.client_email}\nPhone: ${booking.client_phone || 'N/A'}\nAddress: ${booking.address || 'N/A'}\nService: ${serviceLabel}\nNotes: ${booking.notes || 'None'}`,
+        location: booking.address || undefined,
         start: {
           dateTime: startDateTime,
           timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -47,5 +48,30 @@ export async function createCalendarEvent(booking: Booking): Promise<string | nu
   } catch (error) {
     console.error('[Google Calendar] Failed to create event:', error);
     return null;
+  }
+}
+
+export async function updateCalendarEvent(booking: Booking): Promise<boolean> {
+  if (!isConfigured() || !booking.google_event_id) return false;
+
+  const calendar = getCalendarClient();
+  if (!calendar) return false;
+
+  try {
+    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    await calendar.events.patch({
+      calendarId: process.env.GOOGLE_CALENDAR_ID || 'primary',
+      eventId: booking.google_event_id,
+      requestBody: {
+        start: { dateTime: `${booking.date}T${booking.start_time}:00`, timeZone },
+        end: { dateTime: `${booking.date}T${booking.end_time}:00`, timeZone },
+        location: booking.address || undefined,
+      },
+    });
+    console.log(`[Google Calendar] Event updated: ${booking.google_event_id}`);
+    return true;
+  } catch (error) {
+    console.error('[Google Calendar] Failed to update event:', error);
+    return false;
   }
 }

@@ -132,10 +132,35 @@
   &:disabled { cursor: default; }
 }
 
+.range-hint {
+  margin-bottom: 0.75rem;
+}
+
+.range-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--surface-container-lowest);
+  border-radius: 1rem;
+  color: var(--emerald);
+  font-weight: 600;
+
+  .material-symbols-outlined { font-size: 1.25rem; }
+}
+
 .time-slots {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  // 14 one-hour slots: scroll instead of growing taller than the calendar
+  max-height: 460px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-thumb { background: var(--surface-variant); border-radius: 3px; }
 }
 
 .time-slot-card {
@@ -162,6 +187,23 @@
     box-shadow: 0 8px 16px rgba(33, 84, 65, 0.2);
 
     .material-symbols-outlined { color: white; }
+  }
+
+  &.blocked {
+    opacity: 0.45;
+    cursor: not-allowed;
+    text-decoration: line-through;
+
+    .material-symbols-outlined { color: var(--error, #b3261e); }
+  }
+
+  .unavailable-tag {
+    margin-left: auto;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--error, #b3261e);
   }
 
   &:hover:not(.active) {

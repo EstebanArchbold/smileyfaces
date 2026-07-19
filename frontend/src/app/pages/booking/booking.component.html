@@ -69,17 +69,27 @@
         <!-- Step 3: Time Slot -->
         <div class="booking-time">
           <h3 class="headline-sm">Select Time</h3>
+          <p class="body-sm text-muted range-hint">Tap your start hour, then tap a later hour to book more than one hour.</p>
           <div class="time-slots">
-            @for (slot of timeSlots; track slot.start) {
+            @for (item of visibleSlots(); track item.slot.start) {
               <button
                 class="time-slot-card"
-                [class.active]="selectedTimeSlot() === slot.start + '-' + slot.end"
-                (click)="selectTimeSlot(slot.start + '-' + slot.end)">
+                [class.active]="inRange(item.i)"
+                (click)="selectTimeSlot(item.i)">
                 <span class="material-symbols-outlined">schedule</span>
-                <span>{{ slot.label }}</span>
+                <span>{{ item.slot.label }}</span>
               </button>
             }
+            @if (visibleSlots().length === 0 && selectedDate()) {
+              <p class="body-sm text-muted">No hours available for this date. Please pick another day.</p>
+            }
           </div>
+          @if (hasSelection()) {
+            <div class="range-summary">
+              <span class="material-symbols-outlined">event_available</span>
+              <span class="body-md">{{ selectionSummary() }}</span>
+            </div>
+          }
         </div>
       </div>
 
@@ -99,8 +109,22 @@
           </div>
           <div class="form-row">
             <div class="form-field">
-              <label class="label-sm" for="phone">Phone</label>
+              <label class="label-sm" for="phone">Phone Number</label>
               <input id="phone" type="tel" formControlName="client_phone" placeholder="(optional)">
+            </div>
+          </div>
+          <div class="form-field">
+            <label class="label-sm" for="address">Approximate Event Location</label>
+            <input id="address" type="text" formControlName="address" placeholder="Exact address or city">
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label class="label-sm" for="num_kids">Approximate Number of the Kids</label>
+              <input id="num_kids" type="text" formControlName="num_kids" placeholder="How many kids?">
+            </div>
+            <div class="form-field">
+              <label class="label-sm" for="duration">Duration of the Event</label>
+              <input id="duration" type="text" formControlName="duration" placeholder="e.g. 3 hours (optional)">
             </div>
           </div>
           <div class="form-field">
@@ -115,7 +139,7 @@
           <button
             type="submit"
             class="submit-btn"
-            [disabled]="form.invalid || !selectedDate() || !selectedTimeSlot() || submitting()">
+            [disabled]="form.invalid || !selectedDate() || !hasSelection() || submitting()">
             @if (submitting()) {
               Booking...
             } @else {

@@ -124,6 +124,9 @@
     }
   },
   "cli": {
-    "analytics": "ffe0dcee-bd66-488f-9c9f-812057335a02"
+    "analytics": "ffe0dcee-bd66-488f-9c9f-812057335a02",
+    "cache": {
+      "path": "C:/Users/dsarc/.angular-cache/smileyfaces"
+    }
   }
 }

@@ -1,15 +1,13 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { BookingService, Booking } from '../../core/services/booking.service';
 import { EventTypeService } from '../../core/services/event-type.service';
-import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-bookings-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule],
   templateUrl: './bookings-management.component.html',
   styleUrl: './bookings-management.component.scss'
 })
@@ -53,8 +51,7 @@ export class BookingsManagementComponent implements OnInit {
 
   constructor(
     private bookingService: BookingService,
-    private eventTypeService: EventTypeService,
-    private authService: AuthService
+    private eventTypeService: EventTypeService
   ) {}
 
   ngOnInit() {
@@ -206,9 +203,5 @@ export class BookingsManagementComponent implements OnInit {
         this.editError.set(err.error?.error || 'Failed to update the appointment.');
       },
     });
-  }
-
-  logout() {
-    this.authService.logout();
   }
 }

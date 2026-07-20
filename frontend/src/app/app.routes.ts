@@ -31,29 +31,32 @@ export const routes: Routes = [
     loadComponent: () => import('./admin/login/login.component').then(m => m.LoginComponent),
   },
   {
-    path: 'admin/dashboard',
-    canActivate: [adminGuard],
-    loadComponent: () => import('./admin/dashboard/dashboard.component').then(m => m.DashboardComponent),
-  },
-  {
-    path: 'admin/bookings',
-    canActivate: [adminGuard],
-    loadComponent: () => import('./admin/bookings-management/bookings-management.component').then(m => m.BookingsManagementComponent),
-  },
-  {
-    path: 'admin/gallery',
-    canActivate: [adminGuard],
-    loadComponent: () => import('./admin/gallery-management/gallery-management.component').then(m => m.GalleryManagementComponent),
-  },
-  {
-    path: 'admin/settings',
-    canActivate: [adminGuard],
-    loadComponent: () => import('./admin/settings/settings.component').then(m => m.SettingsComponent),
-  },
-  {
     path: 'admin',
-    redirectTo: 'admin/dashboard',
-    pathMatch: 'full',
+    canActivate: [adminGuard],
+    loadComponent: () => import('./admin/layout/admin-layout.component').then(m => m.AdminLayoutComponent),
+    children: [
+      {
+        path: 'dashboard',
+        loadComponent: () => import('./admin/dashboard/dashboard.component').then(m => m.DashboardComponent),
+      },
+      {
+        path: 'bookings',
+        loadComponent: () => import('./admin/bookings-management/bookings-management.component').then(m => m.BookingsManagementComponent),
+      },
+      {
+        path: 'gallery',
+        loadComponent: () => import('./admin/gallery-management/gallery-management.component').then(m => m.GalleryManagementComponent),
+      },
+      {
+        path: 'settings',
+        loadComponent: () => import('./admin/settings/settings.component').then(m => m.SettingsComponent),
+      },
+      {
+        path: '',
+        redirectTo: 'dashboard',
+        pathMatch: 'full',
+      },
+    ],
   },
   {
     path: '**',

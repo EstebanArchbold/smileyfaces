@@ -1,15 +1,13 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { GalleryService, GalleryItem } from '../../core/services/gallery.service';
 import { EventTypeService } from '../../core/services/event-type.service';
-import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-gallery-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule],
   templateUrl: './gallery-management.component.html',
   styleUrl: './gallery-management.component.scss'
 })
@@ -24,8 +22,7 @@ export class GalleryManagementComponent implements OnInit {
 
   constructor(
     private galleryService: GalleryService,
-    private eventTypeService: EventTypeService,
-    private authService: AuthService
+    private eventTypeService: EventTypeService
   ) {}
 
   ngOnInit() {
@@ -73,9 +70,5 @@ export class GalleryManagementComponent implements OnInit {
     this.galleryService.delete(id).subscribe(() => {
       this.items.update(items => items.filter(i => i.id !== id));
     });
-  }
-
-  logout() {
-    this.authService.logout();
   }
 }

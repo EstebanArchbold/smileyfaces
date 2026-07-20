@@ -1,0 +1,67 @@
+<div class="admin-layout">
+  <!-- Desktop sidebar -->
+  <aside class="admin-sidebar">
+    <div class="sidebar-logo">
+      <img src="assets/logo.png" alt="Smiley Faces" class="sidebar-logo-img">
+      <span class="logo-text">Smiley Faces</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a routerLink="/admin/dashboard" routerLinkActive="active" class="nav-item">
+        <span class="material-symbols-outlined">dashboard</span> Dashboard
+      </a>
+      <a routerLink="/admin/bookings" routerLinkActive="active" class="nav-item">
+        <span class="material-symbols-outlined">calendar_month</span> Bookings
+      </a>
+      <a routerLink="/admin/gallery" routerLinkActive="active" class="nav-item">
+        <span class="material-symbols-outlined">collections</span> Gallery
+      </a>
+      <a routerLink="/admin/settings" routerLinkActive="active" class="nav-item">
+        <span class="material-symbols-outlined">settings</span> Settings
+      </a>
+    </nav>
+    <div class="sidebar-bottom">
+      <a routerLink="/" class="nav-item"><span class="material-symbols-outlined">language</span> View Site</a>
+      <button (click)="logout()" class="nav-item logout-btn"><span class="material-symbols-outlined">logout</span> Sign Out</button>
+    </div>
+  </aside>
+
+  <!-- Mobile top app bar -->
+  <header class="admin-topbar">
+    <div class="topbar-logo">
+      <img src="assets/logo.png" alt="Smiley Faces">
+      <span class="logo-text">Smiley Faces</span>
+    </div>
+    <div class="topbar-actions">
+      <a routerLink="/" class="topbar-btn" title="View Site" aria-label="View Site">
+        <span class="material-symbols-outlined">language</span>
+      </a>
+      <button (click)="logout()" class="topbar-btn" title="Sign Out" aria-label="Sign Out">
+        <span class="material-symbols-outlined">logout</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="admin-main">
+    <router-outlet />
+  </main>
+
+  <!-- Mobile bottom tab bar -->
+  <nav class="admin-tabbar">
+    <a routerLink="/admin/dashboard" routerLinkActive="active" class="tab-item">
+      <span class="material-symbols-outlined">dashboard</span>
+      <span class="tab-label">Dashboard</span>
+    </a>
+    <a routerLink="/admin/bookings" routerLinkActive="active" class="tab-item">
+      <span class="material-symbols-outlined">calendar_month</span>
+      <span class="tab-label">Bookings</span>
+    </a>
+    <a routerLink="/admin/gallery" routerLinkActive="active" class="tab-item">
+      <span class="material-symbols-outlined">collections</span>
+      <span class="tab-label">Gallery</span>
+    </a>
+    <a routerLink="/admin/settings" routerLinkActive="active" class="tab-item">
+      <span class="material-symbols-outlined">settings</span>
+      <span class="tab-label">Settings</span>
+    </a>
+  </nav>
+</div>

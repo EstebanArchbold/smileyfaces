@@ -1,47 +1,3 @@
-﻿.admin-layout {
-  display: grid;
-  grid-template-columns: 260px 1fr;
-  min-height: 100vh;
-}
-
-.admin-sidebar {
-  background: var(--surface-container);
-  padding: 2rem 1.25rem;
-  display: flex;
-  flex-direction: column;
-  position: sticky;
-  top: 0;
-  height: 100vh;
-}
-
-.sidebar-logo {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0 0.75rem;
-  margin-bottom: 2.5rem;
-  .sidebar-logo-img { height: 1.75rem; width: 1.75rem; object-fit: contain; }
-  .logo-text { font-family: 'Noto Serif', serif; font-weight: 700; font-size: 1.1rem; }
-}
-
-.sidebar-nav { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; }
-
-.nav-item {
-  display: flex; align-items: center; gap: 0.75rem;
-  padding: 0.75rem 1rem; border-radius: 1rem;
-  font-size: 0.9375rem; font-weight: 500;
-  color: var(--on-surface-variant); text-decoration: none;
-  transition: all 0.2s ease;
-  .material-symbols-outlined { font-size: 1.25rem; }
-  &:hover { background: var(--surface-container-highest); color: var(--on-surface); }
-  &.active { background: var(--emerald); color: white; }
-}
-
-.sidebar-bottom { display: flex; flex-direction: column; gap: 0.25rem; padding-top: 1rem; }
-.logout-btn { width: 100%; text-align: left; cursor: pointer; color: var(--primary); }
-
-.admin-main { padding: 2.5rem 3rem; background: var(--surface); }
-
 .admin-header {
   margin-bottom: 2rem;
   h1 { margin-bottom: 0.25rem; }
@@ -161,11 +117,11 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+}
 
-  .details-received {
-    font-size: 1.125rem;
-    color: var(--success, #2e7d32);
-  }
+.details-received {
+  font-size: 1.125rem;
+  color: var(--success, #2e7d32);
 }
 
 .actions-cell {
@@ -189,6 +145,9 @@
 
   &:hover { background: var(--emerald); color: white; }
 }
+
+// Mobile card list — hidden on desktop, replaces the table on phones
+.bookings-cards { display: none; }
 
 .modal-backdrop {
   position: fixed;
@@ -365,11 +324,6 @@
   }
 }
 
-@media (max-width: 768px) {
-  .detail-grid { grid-template-columns: 1fr; }
-  .detail-item.wide { grid-column: span 1; }
-}
-
 .status-badge {
   display: inline-block;
   padding: 0.25rem 0.75rem;
@@ -421,16 +375,113 @@
   &:disabled { opacity: 0.3; cursor: default; }
 }
 
-@media (max-width: 1024px) {
-  .admin-layout { grid-template-columns: 1fr; }
-  .admin-sidebar {
-    position: relative; height: auto;
-    flex-direction: row; flex-wrap: wrap;
-    padding: 1rem; gap: 0.5rem;
+.empty-msg {
+  text-align: center;
+  padding: 2rem 0;
+}
+
+@media (max-width: 768px) {
+  .admin-header { margin-bottom: 1.25rem; }
+
+  .filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+
+    .filter-field select { width: 100%; font-size: 1rem; }
   }
-  .sidebar-logo { margin-bottom: 0; }
-  .sidebar-nav { flex-direction: row; flex: none; }
-  .sidebar-bottom { flex-direction: row; padding-top: 0; }
-  .nav-item { padding: 0.5rem 0.75rem; font-size: 0.8125rem; }
-  .admin-main { padding: 1.5rem; }
+
+  // table → cards
+  .bookings-table-wrap { display: none; }
+
+  .bookings-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+  }
+
+  .booking-card {
+    background: var(--surface-container-lowest);
+    border-radius: 1.25rem;
+    padding: 1rem 1.125rem;
+    box-shadow: 0 4px 12px var(--shadow-tint);
+    cursor: pointer;
+  }
+
+  .card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .card-title {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    min-width: 0;
+
+    .card-client { font-weight: 600; }
+  }
+
+  .card-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.375rem;
+
+    .card-chevron {
+      margin-left: auto;
+      font-size: 1.375rem;
+      color: var(--on-surface-variant);
+    }
+  }
+
+  .card-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 0.875rem;
+    padding-top: 0.875rem;
+    border-top: 1px solid var(--surface-variant);
+
+    .detail-item .body-md { overflow-wrap: anywhere; }
+  }
+
+  .card-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    margin-top: 0.875rem;
+    padding-top: 0.875rem;
+    border-top: 1px solid var(--surface-variant);
+
+    .action-select {
+      flex: 1;
+      font-size: 1rem;
+      padding: 0.625rem 0.5rem;
+    }
+
+    // comfortable touch targets
+    .link-btn {
+      width: 44px;
+      height: 44px;
+      padding: 0;
+    }
+  }
+
+  .pagination { margin-top: 1.5rem; }
+
+  .modal-backdrop { padding: 0.75rem; align-items: flex-end; }
+
+  .modal-card {
+    padding: 1.5rem;
+    border-radius: 1.5rem 1.5rem 0.75rem 0.75rem;
+    max-height: 85vh;
+  }
+
+  // 16px inputs prevent iOS Safari from auto-zooming on focus
+  .modal-field input,
+  .modal-field select { font-size: 1rem; }
 }

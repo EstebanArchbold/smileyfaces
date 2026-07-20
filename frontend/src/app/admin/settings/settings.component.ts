@@ -1,10 +1,8 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { SettingsService } from '../../core/services/settings.service';
 import { EventTypeService, EventType } from '../../core/services/event-type.service';
-import { AuthService } from '../../core/services/auth.service';
 
 const MAX_WORDS = 50;
 
@@ -18,7 +16,7 @@ interface ContentField {
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule],
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.scss'
 })
@@ -59,8 +57,7 @@ export class SettingsComponent implements OnInit {
 
   constructor(
     private settingsService: SettingsService,
-    private eventTypeService: EventTypeService,
-    private authService: AuthService
+    private eventTypeService: EventTypeService
   ) {}
 
   ngOnInit() {
@@ -184,9 +181,5 @@ export class SettingsComponent implements OnInit {
       next: () => this.eventTypes.update(types => types.filter(t => t.id !== type.id)),
       error: err => this.typeError.set(err.error?.error || 'Failed to delete event type.'),
     });
-  }
-
-  logout() {
-    this.authService.logout();
   }
 }

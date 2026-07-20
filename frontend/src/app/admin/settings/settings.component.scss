@@ -1,41 +1,4 @@
-﻿.admin-layout {
-  display: grid;
-  grid-template-columns: 260px 1fr;
-  min-height: 100vh;
-}
-
-.admin-sidebar {
-  background: var(--surface-container);
-  padding: 2rem 1.25rem;
-  display: flex; flex-direction: column;
-  position: sticky; top: 0; height: 100vh;
-}
-
-.sidebar-logo {
-  display: flex; align-items: center; gap: 0.5rem;
-  padding: 0 0.75rem; margin-bottom: 2.5rem;
-  .sidebar-logo-img { height: 1.75rem; width: 1.75rem; object-fit: contain; }
-  .logo-text { font-family: 'Noto Serif', serif; font-weight: 700; font-size: 1.1rem; }
-}
-
-.sidebar-nav { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; }
-
-.nav-item {
-  display: flex; align-items: center; gap: 0.75rem;
-  padding: 0.75rem 1rem; border-radius: 1rem;
-  font-size: 0.9375rem; font-weight: 500;
-  color: var(--on-surface-variant); text-decoration: none;
-  transition: all 0.2s ease;
-  .material-symbols-outlined { font-size: 1.25rem; }
-  &:hover { background: var(--surface-container-highest); color: var(--on-surface); }
-  &.active { background: var(--emerald); color: white; }
-}
-
-.sidebar-bottom { display: flex; flex-direction: column; gap: 0.25rem; padding-top: 1rem; }
-.logout-btn { width: 100%; text-align: left; cursor: pointer; color: var(--primary); }
-
-.admin-main { padding: 2.5rem 3rem; background: var(--surface); }
-.admin-header { margin-bottom: 2.5rem; h1 { margin-bottom: 0.25rem; } }
+﻿.admin-header { margin-bottom: 2.5rem; h1 { margin-bottom: 0.25rem; } }
 
 .settings-card {
   background: var(--surface-container-lowest);
@@ -300,15 +263,44 @@
 }
 
 @media (max-width: 1024px) {
-  .admin-layout { grid-template-columns: 1fr; }
-  .admin-sidebar {
-    position: relative; height: auto;
-    flex-direction: row; flex-wrap: wrap;
-    padding: 1rem; gap: 0.5rem;
+  .admin-header { margin-bottom: 1.5rem; }
+  .settings-card { padding: 1.5rem; border-radius: 1.5rem; max-width: none; }
+}
+
+@media (max-width: 768px) {
+  // 16px inputs prevent iOS Safari from auto-zooming on focus
+  .content-input,
+  .event-type-row input,
+  .rate-input-group input { font-size: 1rem; }
+
+  .settings-card { padding: 1.25rem; }
+
+  .hero-image-row {
+    flex-direction: column;
+    align-items: center;
+
+    .hero-thumb { width: 200px; }
   }
-  .sidebar-logo { margin-bottom: 0; }
-  .sidebar-nav { flex-direction: row; flex: none; }
-  .sidebar-bottom { flex-direction: row; padding-top: 0; }
-  .nav-item { padding: 0.5rem 0.75rem; font-size: 0.8125rem; }
-  .admin-main { padding: 1.5rem; }
+
+  .hero-image-actions {
+    width: 100%;
+    align-items: stretch;
+    input[type="file"] { max-width: 100%; }
+    .save-btn { text-align: center; }
+  }
+
+  .event-type-row {
+    flex-wrap: wrap;
+
+    input { flex: 1 1 120px; min-width: 0; }
+    .icon-input { flex: 1 1 90px; }
+
+    // comfortable touch targets
+    .icon-btn { padding: 0.625rem; }
+  }
+
+  .settings-actions {
+    flex-wrap: wrap;
+    .save-btn { width: 100%; padding: 0.875rem; }
+  }
 }

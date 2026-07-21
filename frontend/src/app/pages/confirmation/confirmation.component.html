@@ -32,7 +32,7 @@
           <div class="form-row">
             <div class="form-field">
               <label class="label-sm" for="clientPhone">Phone Number</label>
-              <input id="clientPhone" type="tel" [(ngModel)]="clientPhone" name="clientPhone" placeholder="(optional)">
+              <input id="clientPhone" type="tel" [(ngModel)]="clientPhone" name="clientPhone" placeholder="(optional)" required>
             </div>
             <div class="form-field">
               <label class="label-sm" for="serviceType">Event Type *</label>
@@ -77,12 +77,12 @@
         <div class="form-row">
           <div class="form-field">
             <label class="label-sm" for="numKids">Approximate Number of the Kids</label>
-            <input id="numKids" type="text" [(ngModel)]="numKids" name="numKids" placeholder="How many kids?">
+            <input id="numKids" type="text" [(ngModel)]="numKids" name="numKids" placeholder="How many kids?" required>
           </div>
           @if (!standalone) {
             <div class="form-field">
               <label class="label-sm" for="arrivalTime">Arrival Time</label>
-              <input id="arrivalTime" type="text" [(ngModel)]="arrivalTime" name="arrivalTime" placeholder="What time would you like me to arrive?">
+              <input id="arrivalTime" type="text" [(ngModel)]="arrivalTime" name="arrivalTime" placeholder="What time would you like me to arrive?" required>
             </div>
           } @else {
             <div class="form-field">

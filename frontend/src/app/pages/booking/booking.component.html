@@ -109,22 +109,22 @@
           </div>
           <div class="form-row">
             <div class="form-field">
-              <label class="label-sm" for="phone">Phone Number</label>
-              <input id="phone" type="tel" formControlName="client_phone" placeholder="(optional)">
+              <label class="label-sm" for="phone">Phone Number *</label>
+              <input id="phone" type="tel" formControlName="client_phone" placeholder="(XXX) XXX-XXX" required>
             </div>
           </div>
           <div class="form-field">
-            <label class="label-sm" for="address">Approximate Event Location</label>
-            <input id="address" type="text" formControlName="address" placeholder="Exact address or city">
+            <label class="label-sm" for="address">Approximate Location of the Event *</label>
+            <input id="address" type="text" formControlName="address" placeholder="Exact address or city" required>
           </div>
           <div class="form-row">
             <div class="form-field">
-              <label class="label-sm" for="num_kids">Approximate Number of the Kids</label>
+              <label class="label-sm" for="num_kids">Approximate Number of the Kids *</label>
               <input id="num_kids" type="text" formControlName="num_kids" placeholder="How many kids?">
             </div>
             <div class="form-field">
-              <label class="label-sm" for="duration">Duration of the Event</label>
-              <input id="duration" type="text" formControlName="duration" placeholder="e.g. 3 hours (optional)">
+              <label class="label-sm" for="duration">Duration of the Event *</label>
+              <input id="duration" type="text" formControlName="duration" placeholder="e.g. 3 hours" required>
             </div>
           </div>
           <div class="form-field">

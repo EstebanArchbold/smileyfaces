@@ -27,6 +27,29 @@
     </div>
 
     <div class="settings-card">
+      <h3 class="title-lg">About Image</h3>
+      <p class="body-sm text-muted settings-desc">This photo is displayed in the story section of the About page.</p>
+
+      <div class="hero-image-row">
+        @if (aboutPreview()) {
+          <img class="hero-thumb" [src]="aboutPreview()" alt="New about image preview">
+        } @else if (aboutImage()) {
+          <img class="hero-thumb" [src]="aboutImage()" alt="Current about image">
+        } @else {
+          <div class="hero-thumb hero-thumb-empty">
+            <span class="material-symbols-outlined">image</span>
+          </div>
+        }
+        <div class="hero-image-actions">
+          <input type="file" accept="image/*" (change)="onAboutFileSelected($event)">
+          <button class="save-btn" (click)="uploadAboutImage()" [disabled]="!aboutFile || aboutUploading()">
+            @if (aboutUploading()) { Uploading... } @else { Upload Image }
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-card">
       <h3 class="title-lg">Site Content</h3>
       <p class="body-sm text-muted settings-desc">Edit the texts shown on the home page. Each field allows a maximum of 50 words.</p>
 

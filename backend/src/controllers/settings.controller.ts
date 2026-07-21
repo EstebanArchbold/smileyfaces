@@ -72,7 +72,7 @@ export async function updateSettings(req: Request, res: Response): Promise<void>
   res.json(await readAllSettings());
 }
 
-export async function uploadHeroImage(req: Request, res: Response): Promise<void> {
+async function saveImageSetting(key: string, req: Request, res: Response): Promise<void> {
   const db = getDatabase();
   const file = req.file;
 
@@ -83,8 +83,8 @@ export async function uploadHeroImage(req: Request, res: Response): Promise<void
 
   const imagePath = `/uploads/${file.filename}`;
 
-  // Remove the previous hero image file so the volume doesn't accumulate orphans
-  const previous = await db.query("SELECT value FROM settings WHERE key = 'hero_image'");
+  // Remove the previous image file so the volume doesn't accumulate orphans
+  const previous = await db.query('SELECT value FROM settings WHERE key = $1', [key]);
   if (previous.rows.length > 0) {
     const oldPath = path.join(__dirname, '../../', previous.rows[0].value);
     if (fs.existsSync(oldPath)) {
@@ -93,9 +93,17 @@ export async function uploadHeroImage(req: Request, res: Response): Promise<void
   }
 
   await db.query(
-    "INSERT INTO settings (key, value) VALUES ('hero_image', $1) ON CONFLICT (key) DO UPDATE SET value = $1",
-    [imagePath]
+    'INSERT INTO settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = $2',
+    [key, imagePath]
   );
 
   res.status(201).json(await readAllSettings());
+}
+
+export async function uploadHeroImage(req: Request, res: Response): Promise<void> {
+  await saveImageSetting('hero_image', req, res);
+}
+
+export async function uploadAboutImage(req: Request, res: Response): Promise<void> {
+  await saveImageSetting('about_image', req, res);
 }

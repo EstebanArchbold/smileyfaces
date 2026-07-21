@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 export interface Settings {
   hourly_rate?: string;
   hero_image?: string;
+  about_image?: string;
   hero_title?: string;
   hero_subtitle?: string;
   hero_cta?: string;
@@ -32,5 +33,11 @@ export class SettingsService {
     const formData = new FormData();
     formData.append('image', file);
     return this.api.upload<Settings>('/settings/hero-image', formData);
+  }
+
+  uploadAboutImage(file: File): Observable<Settings> {
+    const formData = new FormData();
+    formData.append('image', file);
+    return this.api.upload<Settings>('/settings/about-image', formData);
   }
 }

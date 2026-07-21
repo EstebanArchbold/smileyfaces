@@ -1,0 +1,60 @@
+.policy-hero {
+  padding-top: 7rem;
+  background: var(--surface);
+  .label-sm { margin-bottom: 0.5rem; }
+}
+
+.policy-body {
+  background: var(--surface);
+}
+
+.policy-block {
+  max-width: 760px;
+  margin: 0 auto 2.75rem;
+
+  h2 { margin-bottom: 1rem; }
+  .body-lg { color: var(--on-surface-variant); }
+}
+
+.policy-contact {
+  max-width: 760px;
+  margin: 0 auto;
+  text-align: center;
+
+  a {
+    color: var(--emerald);
+    font-weight: 600;
+    text-decoration: none;
+
+    &:hover { text-decoration: underline; }
+  }
+}
+
+.policy-cta {
+  background: var(--surface-container);
+}
+
+.cta-container {
+  text-align: center;
+  h2 { margin-bottom: 0.75rem; }
+  p { margin-bottom: 2rem; }
+}
+
+.cta-btn {
+  display: inline-block;
+  background: var(--emerald);
+  color: var(--on-primary);
+  padding: 0.875rem 2.25rem;
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05rem;
+  text-decoration: none;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: scale(1.03);
+    box-shadow: 0 12px 24px rgba(33, 84, 65, 0.2);
+  }
+}

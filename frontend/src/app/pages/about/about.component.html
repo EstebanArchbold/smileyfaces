@@ -9,9 +9,13 @@
   <div class="container">
     <div class="story-grid">
       <div class="story-image">
-        <div class="image-placeholder">
-          <span class="material-symbols-outlined">palette</span>
-        </div>
+        @if (image()) {
+          <img class="story-photo" [src]="image()" alt="Smiley Faces artistry">
+        } @else {
+          <div class="image-placeholder">
+            <span class="material-symbols-outlined">palette</span>
+          </div>
+        }
       </div>
       <div class="story-content">
         <h2 class="headline-md">The Vision Behind Smiley Faces</h2>

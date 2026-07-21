@@ -46,6 +46,12 @@ export class SettingsComponent implements OnInit {
   heroPreview = signal<string | null>(null);
   heroUploading = signal(false);
 
+  // About image
+  aboutImage = signal<string | null>(null);
+  aboutFile: File | null = null;
+  aboutPreview = signal<string | null>(null);
+  aboutUploading = signal(false);
+
   // Event types
   eventTypes = signal<EventType[]>([]);
   newTypeLabel = '';
@@ -68,6 +74,7 @@ export class SettingsComponent implements OnInit {
   private applySettings(settings: Record<string, string | undefined>) {
     this.hourlyRate = Number(settings['hourly_rate']) || 80;
     this.heroImage.set(settings['hero_image'] || null);
+    this.aboutImage.set(settings['about_image'] || null);
     this.calendarConfigured.set(settings['google_calendar_configured'] === 'true');
     for (const field of this.contentFields) {
       this.content[field.key] = settings[field.key] || '';
@@ -141,6 +148,30 @@ export class SettingsComponent implements OnInit {
         this.heroUploading.set(false);
       },
       error: () => this.heroUploading.set(false),
+    });
+  }
+
+  onAboutFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.aboutFile = input.files[0];
+      const reader = new FileReader();
+      reader.onload = () => this.aboutPreview.set(reader.result as string);
+      reader.readAsDataURL(this.aboutFile);
+    }
+  }
+
+  uploadAboutImage() {
+    if (!this.aboutFile) return;
+    this.aboutUploading.set(true);
+    this.settingsService.uploadAboutImage(this.aboutFile).subscribe({
+      next: settings => {
+        this.applySettings(settings);
+        this.aboutFile = null;
+        this.aboutPreview.set(null);
+        this.aboutUploading.set(false);
+      },
+      error: () => this.aboutUploading.set(false),
     });
   }
 

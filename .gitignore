@@ -11,6 +11,19 @@ frontend/dist/
 .env
 *.env.local
 
+# ─── Secretos / scripts locales ───────────────────────────────────────────────
+get-token.js
+
+# ─── Uploads en runtime ───────────────────────────────────────────────────────
+backend/uploads/
+
+# ─── Assets originales (no versionar) ─────────────────────────────────────────
+frontend/*-original.png
+
+# ─── Package files de la raíz (no forman parte del monorepo) ──────────────────
+/package.json
+/package-lock.json
+
 # ─── Base de datos local ───────────────────────────────────────────────────────
 backend/data/
 *.db

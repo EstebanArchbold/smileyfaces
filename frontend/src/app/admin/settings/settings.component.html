@@ -24,6 +24,9 @@
           </button>
         </div>
       </div>
+      @if (heroError()) {
+        <span class="save-error">{{ heroError() }}</span>
+      }
     </div>
 
     <div class="settings-card">
@@ -47,6 +50,9 @@
           </button>
         </div>
       </div>
+      @if (aboutError()) {
+        <span class="save-error">{{ aboutError() }}</span>
+      }
     </div>
 
     <div class="settings-card">

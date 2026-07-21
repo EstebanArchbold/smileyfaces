@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SettingsService } from '../../core/services/settings.service';
 import { EventTypeService, EventType } from '../../core/services/event-type.service';
+import { compressImage } from '../../core/utils/image.util';
 
 const MAX_WORDS = 50;
 
@@ -45,12 +46,14 @@ export class SettingsComponent implements OnInit {
   heroFile: File | null = null;
   heroPreview = signal<string | null>(null);
   heroUploading = signal(false);
+  heroError = signal<string | null>(null);
 
   // About image
   aboutImage = signal<string | null>(null);
   aboutFile: File | null = null;
   aboutPreview = signal<string | null>(null);
   aboutUploading = signal(false);
+  aboutError = signal<string | null>(null);
 
   // Event types
   eventTypes = signal<EventType[]>([]);
@@ -137,17 +140,22 @@ export class SettingsComponent implements OnInit {
     }
   }
 
-  uploadHeroImage() {
+  async uploadHeroImage() {
     if (!this.heroFile) return;
     this.heroUploading.set(true);
-    this.settingsService.uploadHeroImage(this.heroFile).subscribe({
+    this.heroError.set(null);
+    const file = await compressImage(this.heroFile);
+    this.settingsService.uploadHeroImage(file).subscribe({
       next: settings => {
         this.applySettings(settings);
         this.heroFile = null;
         this.heroPreview.set(null);
         this.heroUploading.set(false);
       },
-      error: () => this.heroUploading.set(false),
+      error: err => {
+        this.heroUploading.set(false);
+        this.heroError.set(this.uploadErrorMessage(err));
+      },
     });
   }
 
@@ -161,18 +169,32 @@ export class SettingsComponent implements OnInit {
     }
   }
 
-  uploadAboutImage() {
+  async uploadAboutImage() {
     if (!this.aboutFile) return;
     this.aboutUploading.set(true);
-    this.settingsService.uploadAboutImage(this.aboutFile).subscribe({
+    this.aboutError.set(null);
+    const file = await compressImage(this.aboutFile);
+    this.settingsService.uploadAboutImage(file).subscribe({
       next: settings => {
         this.applySettings(settings);
         this.aboutFile = null;
         this.aboutPreview.set(null);
         this.aboutUploading.set(false);
       },
-      error: () => this.aboutUploading.set(false),
+      error: err => {
+        this.aboutUploading.set(false);
+        this.aboutError.set(this.uploadErrorMessage(err));
+      },
     });
+  }
+
+  private uploadErrorMessage(err: unknown): string {
+    const e = err as { status?: number; error?: { error?: string } };
+    if (e?.error?.error) return e.error.error;
+    if (e?.status === 413) return 'Image is too large. Please try a smaller photo.';
+    if (e?.status === 404) return 'Upload endpoint not found — the server may need to be redeployed.';
+    if (e?.status === 401 || e?.status === 403) return 'Your session expired. Please log in again.';
+    return 'Upload failed. Please try again.';
   }
 
   loadEventTypes() {

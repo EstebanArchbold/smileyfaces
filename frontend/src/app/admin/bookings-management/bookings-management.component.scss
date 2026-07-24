@@ -16,20 +16,33 @@
   gap: 0.5rem;
 
   label { color: var(--on-surface-variant); }
+}
 
-  select {
-    background: var(--surface-container-low);
-    border: none;
-    border-bottom: 2px solid var(--surface-variant);
-    padding: 0.625rem 1rem;
-    border-radius: 0.75rem 0.75rem 0 0;
-    font-size: 0.9375rem;
-    outline: none;
-    cursor: pointer;
-    min-width: 180px;
+// The status select and the sort toggle sit side by side, so they share one look
+.filter-field select, .sort-btn {
+  background: var(--surface-container-low);
+  border: none;
+  border-bottom: 2px solid var(--surface-variant);
+  padding: 0.625rem 1rem;
+  border-radius: 0.75rem 0.75rem 0 0;
+  font-size: 0.9375rem;
+  outline: none;
+  cursor: pointer;
+}
 
-    &:focus { border-bottom-color: var(--secondary); }
-  }
+.filter-field select {
+  min-width: 180px;
+  &:focus { border-bottom-color: var(--secondary); }
+}
+
+.sort-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-weight: 600;
+
+  &:hover { background: var(--surface-container-highest); }
+  .material-symbols-outlined { font-size: 1.125rem; }
 }
 
 .bookings-table-wrap {
@@ -390,6 +403,7 @@
     margin-bottom: 1.25rem;
 
     .filter-field select { width: 100%; font-size: 1rem; }
+    .sort-btn { justify-content: center; font-size: 1rem; }
   }
 
   // table → cards

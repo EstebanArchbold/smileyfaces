@@ -170,7 +170,7 @@ export async function submitConfirmation(req: Request, res: Response): Promise<v
 
 export async function getBookings(req: Request, res: Response): Promise<void> {
   const db = getDatabase();
-  const { status, from, to, page = '1', limit = '20' } = req.query;
+  const { status, from, to, page = '1', limit = '20', sort = 'date_desc' } = req.query;
 
   let query = 'SELECT * FROM bookings WHERE 1=1';
   let countQuery = 'SELECT COUNT(*) as total FROM bookings WHERE 1=1';
@@ -200,7 +200,10 @@ export async function getBookings(req: Request, res: Response): Promise<void> {
   const total = Number(countResult.rows[0].total);
 
   const offset = (Number(page) - 1) * Number(limit);
-  query += ` ORDER BY date DESC, start_time DESC LIMIT $${paramIdx++} OFFSET $${paramIdx++}`;
+  // Whitelisted: the direction is interpolated into SQL, so it can never come
+  // straight from the query string.
+  const direction = sort === 'date_asc' ? 'ASC' : 'DESC';
+  query += ` ORDER BY date ${direction}, start_time ${direction} LIMIT $${paramIdx++} OFFSET $${paramIdx++}`;
   const queryParams = [...params, Number(limit), offset];
 
   const result = await db.query(query, queryParams);

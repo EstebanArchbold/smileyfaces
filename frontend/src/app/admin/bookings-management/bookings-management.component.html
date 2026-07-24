@@ -20,6 +20,10 @@
       <option value="cancelled">Cancelled</option>
     </select>
   </div>
+  <button class="sort-btn" (click)="toggleSort()" [title]="sortAsc() ? 'Showing oldest first' : 'Showing newest first'">
+    <span class="material-symbols-outlined">{{ sortAsc() ? 'arrow_upward' : 'arrow_downward' }}</span>
+    {{ sortAsc() ? 'Oldest First' : 'Newest First' }}
+  </button>
   <span class="body-sm text-muted">{{ total() }} bookings found</span>
 </div>
 

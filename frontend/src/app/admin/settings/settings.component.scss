@@ -253,6 +253,60 @@
   font-size: 0.8125rem;
 }
 
+.testimonial-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.testimonial-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: var(--surface-container-low);
+  border-radius: 0.75rem;
+
+  textarea {
+    width: 100%;
+    border: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: 0.9375rem;
+    color: var(--on-surface);
+    outline: none;
+    resize: vertical;
+  }
+
+  .testimonial-footer {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    input {
+      flex: 1;
+      min-width: 0;
+      border: none;
+      background: transparent;
+      border-bottom: 1px solid var(--surface-variant);
+      padding: 0.25rem 0;
+      font-size: 0.875rem;
+      font-style: italic;
+      color: var(--on-surface-variant);
+      outline: none;
+
+      &:focus { border-bottom-color: var(--secondary); }
+    }
+  }
+
+  &.add-row {
+    background: transparent;
+    border: 1px dashed var(--surface-variant);
+    margin-top: 0.5rem;
+  }
+}
+
 .gcal-status {
   display: flex;
   align-items: flex-start;
@@ -298,6 +352,8 @@
   // 16px inputs prevent iOS Safari from auto-zooming on focus
   .content-input,
   .event-type-row input,
+  .testimonial-row textarea,
+  .testimonial-row .testimonial-footer input,
   .rate-input-group input { font-size: 1rem; }
 
   .settings-card { padding: 1.25rem; }

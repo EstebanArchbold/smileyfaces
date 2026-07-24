@@ -91,6 +91,14 @@ export async function initDatabase(): Promise<Pool> {
       ON CONFLICT (id) DO NOTHING;
 
       DELETE FROM event_types WHERE id IN ('et-private-events', 'et-editorial-glow', 'et-bridal', 'et-other');
+
+      CREATE TABLE IF NOT EXISTS testimonials (
+        id TEXT PRIMARY KEY,
+        author TEXT NOT NULL,
+        quote TEXT NOT NULL,
+        display_order INTEGER DEFAULT 0,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
     `);
   } finally {
     client.release();

@@ -10,6 +10,7 @@ import bookingsRoutes from './routes/bookings.routes';
 import galleryRoutes from './routes/gallery.routes';
 import settingsRoutes from './routes/settings.routes';
 import eventTypesRoutes from './routes/event-types.routes';
+import testimonialsRoutes from './routes/testimonials.routes';
 import pushRoutes from './routes/push.routes';
 
 const app = express();
@@ -26,6 +27,7 @@ app.use('/api/bookings', bookingsRoutes);
 app.use('/api/gallery', galleryRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/event-types', eventTypesRoutes);
+app.use('/api/testimonials', testimonialsRoutes);
 app.use('/api/push', pushRoutes);
 
 // Health check

@@ -105,9 +105,9 @@
         <div class="setting-field">
           <label class="label-sm" [for]="field.key">{{ field.label }}</label>
           @if (field.multiline) {
-            <textarea [id]="field.key" rows="3" [(ngModel)]="content[field.key]" class="content-input" [class.invalid]="overLimit(content[field.key])"></textarea>
+            <textarea [id]="field.key" rows="3" [(ngModel)]="content[field.key]" [placeholder]="field.default || ''" class="content-input" [class.invalid]="overLimit(content[field.key])"></textarea>
           } @else {
-            <input [id]="field.key" type="text" [(ngModel)]="content[field.key]" class="content-input" [class.invalid]="overLimit(content[field.key])">
+            <input [id]="field.key" type="text" [(ngModel)]="content[field.key]" [placeholder]="field.default || ''" class="content-input" [class.invalid]="overLimit(content[field.key])">
           }
           <div class="field-meta">
             @if (field.hint) { <span class="body-sm text-muted">{{ field.hint }}</span> }
@@ -162,6 +162,41 @@
       </div>
       @if (typeError()) {
         <span class="save-error">{{ typeError() }}</span>
+      }
+    </div>
+
+    <div class="settings-card">
+      <h3 class="title-lg">Testimonials</h3>
+      <p class="body-sm text-muted settings-desc">Client reviews shown in the rotating slideshow on the home page. If there are none, the section is hidden.</p>
+
+      <div class="testimonial-list">
+        @for (item of testimonials(); track item.id) {
+          <div class="testimonial-row">
+            <textarea rows="2" [(ngModel)]="item.quote" placeholder="What the client said"></textarea>
+            <div class="testimonial-footer">
+              <input type="text" [(ngModel)]="item.author" placeholder="Client name">
+              <button class="icon-btn" title="Save" (click)="updateTestimonial(item)">
+                <span class="material-symbols-outlined">save</span>
+              </button>
+              <button class="icon-btn danger" title="Delete" (click)="deleteTestimonial(item)">
+                <span class="material-symbols-outlined">delete</span>
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="testimonial-row add-row">
+        <textarea rows="2" [(ngModel)]="newTestimonialQuote" placeholder="New testimonial text"></textarea>
+        <div class="testimonial-footer">
+          <input type="text" [(ngModel)]="newTestimonialAuthor" placeholder="Client name">
+          <button class="save-btn small" (click)="addTestimonial()" [disabled]="!newTestimonialAuthor.trim() || !newTestimonialQuote.trim() || testimonialSaving()">
+            @if (testimonialSaving()) { Adding... } @else { Add }
+          </button>
+        </div>
+      </div>
+      @if (testimonialError()) {
+        <span class="save-error">{{ testimonialError() }}</span>
       }
     </div>
 

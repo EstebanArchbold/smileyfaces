@@ -1,0 +1,30 @@
+@if (items().length > 0) {
+  <section class="testimonials-section">
+    <div class="container">
+      <span class="section-label label-sm">Kind Words</span>
+      <span class="material-symbols-outlined quote-icon">format_quote</span>
+
+      <div class="slides">
+        @for (item of items(); track item.id; let i = $index) {
+          <blockquote class="slide" [class.active]="current() === i">
+            <p class="quote-text">{{ item.quote }}</p>
+            <cite class="quote-author label-md">{{ item.author }}</cite>
+          </blockquote>
+        }
+      </div>
+
+      @if (items().length > 1) {
+        <div class="dots">
+          @for (item of items(); track item.id; let i = $index) {
+            <button
+              class="dot"
+              [class.active]="current() === i"
+              (click)="goTo(i)"
+              [attr.aria-label]="'Show testimonial ' + (i + 1)">
+            </button>
+          }
+        </div>
+      }
+    </div>
+  </section>
+}

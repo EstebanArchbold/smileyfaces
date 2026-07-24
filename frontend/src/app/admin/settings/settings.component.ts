@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SettingsService } from '../../core/services/settings.service';
 import { EventTypeService, EventType } from '../../core/services/event-type.service';
+import { TestimonialService, Testimonial } from '../../core/services/testimonial.service';
 import { compressImage } from '../../core/utils/image.util';
 import { PushService } from '../../core/services/push.service';
 
@@ -13,6 +14,9 @@ interface ContentField {
   label: string;
   hint?: string;
   multiline?: boolean;
+  // Text the live site falls back to when this setting was never saved, so the
+  // admin sees the current wording instead of an empty box.
+  default?: string;
 }
 
 @Component({
@@ -29,13 +33,13 @@ export class SettingsComponent implements OnInit {
 
   // Site content
   contentFields: ContentField[] = [
-    { key: 'hero_title', label: 'Hero Title', hint: 'One line per row — the second line is shown in green.', multiline: true },
-    { key: 'hero_subtitle', label: 'Hero Subtitle', multiline: true },
-    { key: 'hero_cta', label: 'Hero Button Text' },
-    { key: 'hero_badge', label: 'Hero Badge Text' },
-    { key: 'gallery_label', label: 'Gallery Small Label' },
-    { key: 'gallery_title', label: 'Gallery Title' },
-    { key: 'gallery_description', label: 'Gallery Description', multiline: true },
+    { key: 'hero_title', label: 'Hero Title', hint: 'One line per row — the second line is shown in green.', multiline: true, default: 'Artistry\nBeyond\nPaint' },
+    { key: 'hero_subtitle', label: 'Hero Subtitle', multiline: true, default: 'Curated face couture for the modern celebration. Transforming every occasion into a living canvas of elegance.' },
+    { key: 'hero_cta', label: 'Hero Button Text', default: 'Reserve Your Glow' },
+    { key: 'hero_badge', label: 'Hero Badge Text', default: 'Smiley Faces Artistry' },
+    { key: 'gallery_label', label: 'Gallery Small Label', default: 'Selected Works' },
+    { key: 'gallery_title', label: 'Gallery Title', default: 'The Gallery' },
+    { key: 'gallery_description', label: 'Gallery Description', multiline: true, default: 'A curation of our most sought-after designs, from minimal accents to full-face transformations.' },
   ];
   content: Record<string, string> = {};
   contentSaving = signal(false);
@@ -63,6 +67,13 @@ export class SettingsComponent implements OnInit {
   typeSaving = signal(false);
   typeError = signal<string | null>(null);
 
+  // Testimonials
+  testimonials = signal<Testimonial[]>([]);
+  newTestimonialAuthor = '';
+  newTestimonialQuote = '';
+  testimonialSaving = signal(false);
+  testimonialError = signal<string | null>(null);
+
   calendarConfigured = signal(false);
 
   // Notifications
@@ -74,12 +85,14 @@ export class SettingsComponent implements OnInit {
   constructor(
     private settingsService: SettingsService,
     private eventTypeService: EventTypeService,
+    private testimonialService: TestimonialService,
     private pushService: PushService
   ) {}
 
   ngOnInit() {
     this.settingsService.get().subscribe(settings => this.applySettings(settings));
     this.loadEventTypes();
+    this.loadTestimonials();
     this.pushService.isSubscribed().then(sub => this.pushSubscribed.set(sub));
   }
 
@@ -144,7 +157,9 @@ export class SettingsComponent implements OnInit {
     this.aboutImage.set(settings['about_image'] || null);
     this.calendarConfigured.set(settings['google_calendar_configured'] === 'true');
     for (const field of this.contentFields) {
-      this.content[field.key] = settings[field.key] || '';
+      // Fall back to the live default so the field shows the text currently on
+      // the site, matching what a visitor sees, rather than an empty box.
+      this.content[field.key] = settings[field.key] || field.default || '';
     }
   }
 
@@ -297,6 +312,48 @@ export class SettingsComponent implements OnInit {
     this.eventTypeService.delete(type.id).subscribe({
       next: () => this.eventTypes.update(types => types.filter(t => t.id !== type.id)),
       error: err => this.typeError.set(err.error?.error || 'Failed to delete event type.'),
+    });
+  }
+
+  loadTestimonials() {
+    this.testimonialService.getAll().subscribe(items => this.testimonials.set(items));
+  }
+
+  addTestimonial() {
+    if (!this.newTestimonialAuthor.trim() || !this.newTestimonialQuote.trim()) return;
+    this.testimonialSaving.set(true);
+    this.testimonialError.set(null);
+    this.testimonialService.create({
+      author: this.newTestimonialAuthor.trim(),
+      quote: this.newTestimonialQuote.trim(),
+    }).subscribe({
+      next: () => {
+        this.newTestimonialAuthor = '';
+        this.newTestimonialQuote = '';
+        this.testimonialSaving.set(false);
+        this.loadTestimonials();
+      },
+      error: err => {
+        this.testimonialSaving.set(false);
+        this.testimonialError.set(err.error?.error || 'Failed to add testimonial.');
+      },
+    });
+  }
+
+  updateTestimonial(item: Testimonial) {
+    if (!item.author.trim() || !item.quote.trim()) return;
+    this.testimonialError.set(null);
+    this.testimonialService.update(item.id, { author: item.author.trim(), quote: item.quote.trim() }).subscribe({
+      next: () => this.loadTestimonials(),
+      error: err => this.testimonialError.set(err.error?.error || 'Failed to update testimonial.'),
+    });
+  }
+
+  deleteTestimonial(item: Testimonial) {
+    this.testimonialError.set(null);
+    this.testimonialService.delete(item.id).subscribe({
+      next: () => this.testimonials.update(items => items.filter(t => t.id !== item.id)),
+      error: err => this.testimonialError.set(err.error?.error || 'Failed to delete testimonial.'),
     });
   }
 }

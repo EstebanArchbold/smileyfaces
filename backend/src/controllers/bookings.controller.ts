@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { getDatabase } from '../config/database';
-import { createCalendarEvent, updateCalendarEvent } from '../services/calendar.service';
+import { createCalendarEvent, updateCalendarEvent, deleteCalendarEvent } from '../services/calendar.service';
+import { notifyAdmin } from '../services/notification.service';
 import { Booking } from '../types';
 
 // Minimum gap between appointments (traveling time, setup, etc.)
@@ -50,6 +51,8 @@ export async function createBooking(req: Request, res: Response): Promise<void> 
      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`,
     [id, client_name, client_email, client_phone || null, address || null, service_type, date, start_time, end_time, notes || null, num_kids || null, duration || null]
   );
+
+  notifyAdmin(result.rows[0] as Booking, 'new_booking');
 
   res.status(201).json(result.rows[0]);
 }
@@ -109,6 +112,8 @@ export async function createConfirmedBooking(req: Request, res: Response): Promi
     await db.query('UPDATE bookings SET google_event_id = $1 WHERE id = $2', [eventId, id]);
   }
 
+  notifyAdmin(booking, 'confirmation_submitted');
+
   res.status(201).json(booking);
 }
 
@@ -157,6 +162,8 @@ export async function submitConfirmation(req: Request, res: Response): Promise<v
       id,
     ]
   );
+
+  notifyAdmin(result.rows[0] as Booking, 'confirmation_submitted');
 
   res.json(result.rows[0]);
 }
@@ -273,8 +280,14 @@ export async function updateBooking(req: Request, res: Response): Promise<void> 
   const afterUpdate = await db.query('SELECT * FROM bookings WHERE id = $1', [id]);
   const booking = afterUpdate.rows[0] as Booking;
 
-  // Google Calendar sync: create on confirm, patch when a synced booking is rescheduled
-  if (status === 'confirmed' && current.status !== 'confirmed') {
+  // Google Calendar sync: create on confirm, remove on cancel, patch when a
+  // synced booking is rescheduled
+  if (status === 'cancelled' && current.status !== 'cancelled' && booking.google_event_id) {
+    const removed = await deleteCalendarEvent(booking.google_event_id);
+    if (removed) {
+      await db.query('UPDATE bookings SET google_event_id = NULL WHERE id = $1', [id]);
+    }
+  } else if (status === 'confirmed' && current.status !== 'confirmed') {
     const eventId = await createCalendarEvent(booking);
     if (eventId) {
       await db.query('UPDATE bookings SET google_event_id = $1 WHERE id = $2', [eventId, id]);

@@ -56,6 +56,32 @@ export async function createCalendarEvent(booking: Booking): Promise<string | nu
   }
 }
 
+export async function deleteCalendarEvent(eventId: string): Promise<boolean> {
+  if (!isConfigured()) return false;
+
+  const calendar = getCalendarClient();
+  if (!calendar) return false;
+
+  try {
+    await calendar.events.delete({
+      calendarId: process.env.GOOGLE_CALENDAR_ID || 'primary',
+      eventId,
+    });
+    console.log(`[Google Calendar] Event deleted: ${eventId}`);
+    return true;
+  } catch (error) {
+    // 404/410 mean the event is already gone from the calendar — the booking
+    // still needs its google_event_id cleared, so treat it as a success.
+    const status = (error as { code?: number })?.code;
+    if (status === 404 || status === 410) {
+      console.log(`[Google Calendar] Event ${eventId} was already gone.`);
+      return true;
+    }
+    console.error('[Google Calendar] Failed to delete event:', error);
+    return false;
+  }
+}
+
 export async function updateCalendarEvent(booking: Booking): Promise<boolean> {
   if (!isConfigured() || !booking.google_event_id) return false;
 

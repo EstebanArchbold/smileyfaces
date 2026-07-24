@@ -4,6 +4,48 @@
     </div>
 
     <div class="settings-card">
+      <h3 class="title-lg">Notifications</h3>
+      <p class="body-sm text-muted settings-desc">
+        Get an alert on this device whenever a client books or submits a confirmation form.
+      </p>
+
+      @if (!pushSupported) {
+        <p class="body-sm push-note">
+          This browser doesn't support notifications.
+        </p>
+      } @else if (!pushStandalone) {
+        <p class="body-sm push-note">
+          On iPhone and iPad, add this admin panel to your Home Screen first
+          (Share → Add to Home Screen), then open it from there and come back to this page.
+        </p>
+      } @else if (pushBlocked) {
+        <p class="body-sm push-note">
+          Notifications are blocked for this app. Turn them on in your device settings, then reload.
+        </p>
+      } @else {
+        <div class="push-actions">
+          @if (pushSubscribed()) {
+            <button class="save-btn" (click)="disableNotifications()" [disabled]="pushBusy()">
+              @if (pushBusy()) { Working... } @else { Turn Off On This Device }
+            </button>
+            <button class="test-btn" (click)="sendTestNotification()">Send Test</button>
+          } @else {
+            <button class="save-btn" (click)="enableNotifications()" [disabled]="pushBusy()">
+              @if (pushBusy()) { Working... } @else { Turn On Notifications }
+            </button>
+          }
+        </div>
+      }
+
+      @if (pushMessage()) {
+        <span class="save-success">{{ pushMessage() }}</span>
+      }
+      @if (pushError()) {
+        <span class="save-error">{{ pushError() }}</span>
+      }
+    </div>
+
+    <div class="settings-card">
       <h3 class="title-lg">Hero Image</h3>
       <p class="body-sm text-muted settings-desc">This photo is displayed in the hero section of the home page.</p>
 

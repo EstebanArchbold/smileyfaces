@@ -36,7 +36,11 @@ export class BookingsManagementComponent implements OnInit {
   editEnd = '';
   editError = signal<string | null>(null);
   editSaving = signal(false);
-  hourOptions = Array.from({ length: 15 }, (_, i) => `${String(8 + i).padStart(2, '0')}:00`);
+  // 15-minute steps from 8:00 to 22:00, matching the public booking page
+  hourOptions = Array.from({ length: 57 }, (_, i) => {
+    const min = 8 * 60 + i * 15;
+    return `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`;
+  });
 
   statuses = ['', 'pending', 'confirmed', 'completed', 'cancelled'];
 

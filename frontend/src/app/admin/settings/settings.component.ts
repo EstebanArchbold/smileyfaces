@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { SettingsService } from '../../core/services/settings.service';
 import { EventTypeService, EventType } from '../../core/services/event-type.service';
 import { compressImage } from '../../core/utils/image.util';
+import { PushService } from '../../core/services/push.service';
 
 const MAX_WORDS = 50;
 
@@ -64,14 +65,77 @@ export class SettingsComponent implements OnInit {
 
   calendarConfigured = signal(false);
 
+  // Notifications
+  pushSubscribed = signal(false);
+  pushBusy = signal(false);
+  pushError = signal<string | null>(null);
+  pushMessage = signal<string | null>(null);
+
   constructor(
     private settingsService: SettingsService,
-    private eventTypeService: EventTypeService
+    private eventTypeService: EventTypeService,
+    private pushService: PushService
   ) {}
 
   ngOnInit() {
     this.settingsService.get().subscribe(settings => this.applySettings(settings));
     this.loadEventTypes();
+    this.pushService.isSubscribed().then(sub => this.pushSubscribed.set(sub));
+  }
+
+  get pushSupported(): boolean {
+    return this.pushService.supported;
+  }
+
+  get pushStandalone(): boolean {
+    return this.pushService.isStandalone;
+  }
+
+  get pushBlocked(): boolean {
+    return this.pushService.permission === 'denied';
+  }
+
+  async enableNotifications() {
+    this.pushBusy.set(true);
+    this.pushError.set(null);
+    this.pushMessage.set(null);
+    try {
+      await this.pushService.subscribe();
+      this.pushSubscribed.set(true);
+      this.pushMessage.set('This device will now receive booking notifications.');
+    } catch (err) {
+      this.pushError.set(
+        this.pushBlocked
+          ? 'Notifications are blocked for this app. Enable them in your device settings, then try again.'
+          : (err as Error).message || 'Could not enable notifications on this device.'
+      );
+    } finally {
+      this.pushBusy.set(false);
+    }
+  }
+
+  async disableNotifications() {
+    this.pushBusy.set(true);
+    this.pushError.set(null);
+    this.pushMessage.set(null);
+    try {
+      await this.pushService.unsubscribe();
+      this.pushSubscribed.set(false);
+      this.pushMessage.set('This device will no longer receive notifications.');
+    } catch {
+      this.pushError.set('Could not disable notifications on this device.');
+    } finally {
+      this.pushBusy.set(false);
+    }
+  }
+
+  sendTestNotification() {
+    this.pushError.set(null);
+    this.pushMessage.set(null);
+    this.pushService.sendTest().subscribe({
+      next: () => this.pushMessage.set('Test sent — it should arrive in a few seconds.'),
+      error: () => this.pushError.set('Could not send the test notification.'),
+    });
   }
 
   private applySettings(settings: Record<string, string | undefined>) {

@@ -52,6 +52,15 @@ export async function initDatabase(): Promise<Pool> {
         value TEXT NOT NULL
       );
 
+      -- One row per device the admin enabled notifications on. The endpoint URL
+      -- is the browser's unique address for that device, so it's the key.
+      CREATE TABLE IF NOT EXISTS push_subscriptions (
+        endpoint TEXT PRIMARY KEY,
+        p256dh TEXT NOT NULL,
+        auth TEXT NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
       ALTER TABLE bookings ADD COLUMN IF NOT EXISTS address TEXT;
       ALTER TABLE bookings ADD COLUMN IF NOT EXISTS num_kids TEXT;
       ALTER TABLE bookings ADD COLUMN IF NOT EXISTS duration TEXT;

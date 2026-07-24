@@ -17,7 +17,7 @@ export class BookingsManagementComponent implements OnInit {
   page = signal(1);
   totalPages = signal(1);
   statusFilter = '';
-  sortAsc = signal(false);
+  sortBy = 'created_desc';
   loading = signal(false);
   expandedId = signal<string | null>(null);
 
@@ -79,7 +79,7 @@ export class BookingsManagementComponent implements OnInit {
     const params: Record<string, string> = {
       page: String(this.page()),
       limit: '15',
-      sort: this.sortAsc() ? 'date_asc' : 'date_desc',
+      sort: this.sortBy,
     };
     if (this.statusFilter) params['status'] = this.statusFilter;
 
@@ -99,10 +99,9 @@ export class BookingsManagementComponent implements OnInit {
     this.loadBookings();
   }
 
-  // Sorting happens server-side: the list is paginated, so flipping the order
-  // client-side would only reorder the 15 rows currently on screen.
-  toggleSort() {
-    this.sortAsc.update(asc => !asc);
+  // Sorting happens server-side: the list is paginated, so reordering
+  // client-side would only touch the 15 rows currently on screen.
+  onSortChange() {
     this.page.set(1);
     this.loadBookings();
   }

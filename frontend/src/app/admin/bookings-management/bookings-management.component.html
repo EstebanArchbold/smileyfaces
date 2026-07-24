@@ -20,10 +20,14 @@
       <option value="cancelled">Cancelled</option>
     </select>
   </div>
-  <button class="sort-btn" (click)="toggleSort()" [title]="sortAsc() ? 'Showing oldest first' : 'Showing newest first'">
-    <span class="material-symbols-outlined">{{ sortAsc() ? 'arrow_upward' : 'arrow_downward' }}</span>
-    {{ sortAsc() ? 'Oldest First' : 'Newest First' }}
-  </button>
+  <div class="filter-field">
+    <label class="label-sm">Sort by</label>
+    <select [(ngModel)]="sortBy" (ngModelChange)="onSortChange()">
+      <option value="created_desc">Newest (request date)</option>
+      <option value="created_asc">Oldest (request date)</option>
+      <option value="date_desc">Booked (event date)</option>
+    </select>
+  </div>
   <span class="body-sm text-muted">{{ total() }} bookings found</span>
 </div>
 

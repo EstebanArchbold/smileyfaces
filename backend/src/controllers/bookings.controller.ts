@@ -170,7 +170,7 @@ export async function submitConfirmation(req: Request, res: Response): Promise<v
 
 export async function getBookings(req: Request, res: Response): Promise<void> {
   const db = getDatabase();
-  const { status, from, to, page = '1', limit = '20', sort = 'date_desc' } = req.query;
+  const { status, from, to, page = '1', limit = '20', sort = 'created_desc' } = req.query;
 
   let query = 'SELECT * FROM bookings WHERE 1=1';
   let countQuery = 'SELECT COUNT(*) as total FROM bookings WHERE 1=1';
@@ -200,10 +200,17 @@ export async function getBookings(req: Request, res: Response): Promise<void> {
   const total = Number(countResult.rows[0].total);
 
   const offset = (Number(page) - 1) * Number(limit);
-  // Whitelisted: the direction is interpolated into SQL, so it can never come
+  // Whitelisted: the ORDER BY is interpolated into SQL, so it can never come
   // straight from the query string.
-  const direction = sort === 'date_asc' ? 'ASC' : 'DESC';
-  query += ` ORDER BY date ${direction}, start_time ${direction} LIMIT $${paramIdx++} OFFSET $${paramIdx++}`;
+  // created_* sorts by when the client sent the request, date_* by the event day.
+  const orderClauses: Record<string, string> = {
+    created_desc: 'created_at DESC',
+    created_asc: 'created_at ASC',
+    date_desc: 'date DESC, start_time DESC',
+    date_asc: 'date ASC, start_time ASC',
+  };
+  const orderBy = orderClauses[String(sort)] || orderClauses['created_desc'];
+  query += ` ORDER BY ${orderBy} LIMIT $${paramIdx++} OFFSET $${paramIdx++}`;
   const queryParams = [...params, Number(limit), offset];
 
   const result = await db.query(query, queryParams);

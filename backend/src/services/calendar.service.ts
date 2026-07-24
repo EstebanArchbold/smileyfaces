@@ -2,6 +2,11 @@ import { getCalendarClient, isConfigured } from '../config/google-calendar';
 import { getDatabase } from '../config/database';
 import { Booking } from '../types';
 
+// Bookings store wall-clock times ("17:00") with no offset, so Google needs to be
+// told which zone they belong to. This must be the business's zone, never the
+// server's: the API container runs in UTC, which shifted every event by hours.
+const BUSINESS_TIMEZONE = process.env.BUSINESS_TIMEZONE || 'America/Toronto';
+
 async function getServiceLabel(serviceType: string): Promise<string> {
   try {
     const result = await getDatabase().query('SELECT label FROM event_types WHERE value = $1', [serviceType]);
@@ -33,13 +38,13 @@ export async function createCalendarEvent(booking: Booking): Promise<string | nu
         location: booking.address || undefined,
         start: {
           dateTime: startDateTime,
-          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          timeZone: BUSINESS_TIMEZONE,
         },
         end: {
           dateTime: endDateTime,
-          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          timeZone: BUSINESS_TIMEZONE,
         },
-        colorId: '11', // Tomato/pink color
+        colorId: '10', // Basil color
       },
     });
 
@@ -58,7 +63,7 @@ export async function updateCalendarEvent(booking: Booking): Promise<boolean> {
   if (!calendar) return false;
 
   try {
-    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const timeZone = BUSINESS_TIMEZONE;
     await calendar.events.patch({
       calendarId: process.env.GOOGLE_CALENDAR_ID || 'primary',
       eventId: booking.google_event_id,

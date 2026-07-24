@@ -303,9 +303,9 @@ export async function getBookingStats(_req: Request, res: Response): Promise<voi
   );
   const upcomingBookings = Number(upcomingResult.rows[0].count);
 
-  // Calculate total revenue
+  // Revenue only counts work already delivered, so 'completed' bookings only
   const revenueRows = await db.query(
-    "SELECT start_time, end_time FROM bookings WHERE status IN ('confirmed', 'completed')"
+    "SELECT start_time, end_time FROM bookings WHERE status = 'completed'"
   );
   let totalRevenue = 0;
   for (const b of revenueRows.rows) {
@@ -322,7 +322,7 @@ export async function getBookingStats(_req: Request, res: Response): Promise<voi
   // Revenue by month
   const revenueDataResult = await db.query(`
     SELECT TO_CHAR(date::date, 'YYYY-MM') as month, start_time, end_time
-    FROM bookings WHERE status IN ('confirmed', 'completed')
+    FROM bookings WHERE status = 'completed'
     ORDER BY month DESC
   `);
 

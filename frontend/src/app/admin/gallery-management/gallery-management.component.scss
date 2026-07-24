@@ -90,25 +90,123 @@
 
   img { width: 100%; height: 100%; object-fit: cover; }
 
-  .delete-btn {
+  .card-actions {
     position: absolute;
     top: 0.75rem;
     right: 0.75rem;
+    display: flex;
+    gap: 0.5rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .edit-btn, .delete-btn {
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    background: rgba(186, 26, 26, 0.85);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    opacity: 0;
-    transition: opacity 0.3s ease;
 
     .material-symbols-outlined { color: white; font-size: 1.125rem; }
   }
 
-  &:hover .delete-btn { opacity: 1; }
+  .edit-btn { background: rgba(33, 84, 65, 0.85); }
+  .delete-btn { background: rgba(186, 26, 26, 0.85); }
+
+  &:hover .card-actions { opacity: 1; }
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 1.5rem;
+}
+
+.modal-card {
+  background: var(--surface-container-lowest);
+  border-radius: 1.5rem;
+  padding: 2rem;
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.close-btn {
+  display: flex;
+  padding: 0.375rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  color: var(--on-surface-variant);
+  &:hover { background: var(--surface-container-highest); }
+}
+
+.modal-desc { margin-bottom: 1.5rem; }
+
+.modal-preview {
+  border-radius: 1rem;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+  max-height: 220px;
+
+  img { width: 100%; height: 220px; object-fit: cover; display: block; }
+}
+
+.modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  margin-bottom: 1rem;
+
+  label { color: var(--on-surface-variant); }
+
+  input, select {
+    width: 100%;
+    background: var(--surface-container-low);
+    border: none;
+    border-bottom: 2px solid var(--surface-variant);
+    border-radius: 0.625rem 0.625rem 0 0;
+    padding: 0.625rem 0.875rem;
+    font-size: 0.9375rem;
+    outline: none;
+
+    &:focus {
+      background: var(--surface-container-highest);
+      border-bottom-color: var(--secondary);
+    }
+  }
+
+  input[type="file"] { padding: 0.5rem; cursor: pointer; }
+  select { cursor: pointer; }
+}
+
+.modal-error {
+  background: rgba(186, 26, 26, 0.08);
+  color: var(--error, #b3261e);
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-top: 1rem;
+}
+
+.modal-actions {
+  margin-top: 1.25rem;
 }
 
 .gallery-card-info {
@@ -147,6 +245,6 @@
     gap: 0.875rem;
   }
 
-  // no hover on touch screens — keep the delete button always visible
-  .gallery-card-image .delete-btn { opacity: 1; }
+  // no hover on touch screens — keep the action buttons always visible
+  .gallery-card-image .card-actions { opacity: 1; }
 }

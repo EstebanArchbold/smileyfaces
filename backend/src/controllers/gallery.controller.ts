@@ -51,6 +51,45 @@ export async function addGalleryItem(req: Request, res: Response): Promise<void>
   res.status(201).json(result.rows[0]);
 }
 
+// Edit an existing item: title and category always, image file only when a
+// replacement is uploaded (the old file is removed so uploads/ doesn't pile up).
+export async function updateGalleryItem(req: Request, res: Response): Promise<void> {
+  const db = getDatabase();
+  const { id } = req.params;
+  const { title, category } = req.body;
+  const file = req.file;
+
+  const existing = await db.query('SELECT * FROM gallery WHERE id = $1', [id]);
+
+  if (existing.rows.length === 0) {
+    res.status(404).json({ error: 'Gallery item not found' });
+    return;
+  }
+
+  const current = existing.rows[0];
+  let imagePath = current.image_path;
+
+  if (file) {
+    imagePath = `/uploads/${file.filename}`;
+    const oldPath = path.join(__dirname, '../../', current.image_path);
+    if (fs.existsSync(oldPath)) {
+      fs.unlinkSync(oldPath);
+    }
+  }
+
+  const result = await db.query(
+    'UPDATE gallery SET title = $1, category = $2, image_path = $3 WHERE id = $4 RETURNING *',
+    [
+      title === undefined ? current.title : (String(title).trim() || null),
+      category || current.category,
+      imagePath,
+      id,
+    ]
+  );
+
+  res.json(result.rows[0]);
+}
+
 export async function deleteGalleryItem(req: Request, res: Response): Promise<void> {
   const db = getDatabase();
   const { id } = req.params;

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { GalleryService, GalleryItem } from '../../core/services/gallery.service';
 import { EventTypeService } from '../../core/services/event-type.service';
+import { compressImage } from '../../core/utils/image.util';
 
 @Component({
   selector: 'app-gallery-management',
@@ -19,6 +20,14 @@ export class GalleryManagementComponent implements OnInit {
   selectedFile: File | null = null;
 
   categories = signal<{ value: string; label: string }[]>([]);
+
+  // Edit modal
+  editItem = signal<GalleryItem | null>(null);
+  editTitle = '';
+  editCategory = '';
+  editFile: File | null = null;
+  editSaving = signal(false);
+  editError = signal<string | null>(null);
 
   constructor(
     private galleryService: GalleryService,
@@ -69,6 +78,59 @@ export class GalleryManagementComponent implements OnInit {
   deleteItem(id: string) {
     this.galleryService.delete(id).subscribe(() => {
       this.items.update(items => items.filter(i => i.id !== id));
+    });
+  }
+
+  openEdit(item: GalleryItem) {
+    this.editItem.set(item);
+    this.editTitle = item.title || '';
+    this.editCategory = item.category;
+    this.editFile = null;
+    this.editError.set(null);
+  }
+
+  closeEdit() {
+    this.editItem.set(null);
+    this.editFile = null;
+  }
+
+  onEditFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    this.editFile = input.files && input.files.length > 0 ? input.files[0] : null;
+  }
+
+  async saveEdit() {
+    const item = this.editItem();
+    if (!item) return;
+
+    this.editSaving.set(true);
+    this.editError.set(null);
+
+    const formData = new FormData();
+    formData.append('title', this.editTitle);
+    formData.append('category', this.editCategory);
+
+    // Only sent when the admin picked a replacement; otherwise the image stays
+    if (this.editFile) {
+      try {
+        formData.append('image', await compressImage(this.editFile));
+      } catch {
+        this.editError.set('Could not read that image. Please try another file.');
+        this.editSaving.set(false);
+        return;
+      }
+    }
+
+    this.galleryService.update(item.id, formData).subscribe({
+      next: updated => {
+        this.items.update(items => items.map(i => (i.id === updated.id ? updated : i)));
+        this.editSaving.set(false);
+        this.closeEdit();
+      },
+      error: err => {
+        this.editError.set(err.error?.error || 'Could not save the changes. Please try again.');
+        this.editSaving.set(false);
+      },
     });
   }
 }

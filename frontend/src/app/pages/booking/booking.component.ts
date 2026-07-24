@@ -5,6 +5,9 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
 import { BookingService, CreateBookingDto } from '../../core/services/booking.service';
 import { EventTypeService } from '../../core/services/event-type.service';
 
+// Booking granularity: clients pick their start and end in 15-minute steps
+const SLOT_MINUTES = 15;
+
 interface CalendarDay {
   day: number;
   currentMonth: boolean;
@@ -24,7 +27,7 @@ export class BookingComponent implements OnInit, OnDestroy {
 
   currentMonth = signal(new Date());
   selectedDate = signal<Date | null>(null);
-  // Range selection: first click sets the start hour, second click extends to the end hour
+  // Range selection: first click sets the start slot, second click extends to the end slot
   rangeStart = signal<number | null>(null);
   rangeEnd = signal<number | null>(null);
   selectedService = signal<string>('private_events');
@@ -39,21 +42,23 @@ export class BookingComponent implements OnInit, OnDestroy {
     { value: 'other', label: 'Other', icon: 'palette' },
   ]);
 
-  // 1-hour slots from 8 AM to 10 PM
-  timeSlots = Array.from({ length: 14 }, (_, i) => {
-    const h = 8 + i;
-    const fmt = (hour: number) => {
+  // 15-minute slots from 8 AM to 10 PM
+  timeSlots = Array.from({ length: 56 }, (_, i) => {
+    const startMin = 8 * 60 + i * SLOT_MINUTES;
+    const endMin = startMin + SLOT_MINUTES;
+    const fmt = (min: number) => {
+      const hour = Math.floor(min / 60);
       const period = hour >= 12 ? 'PM' : 'AM';
       const h12 = hour % 12 === 0 ? 12 : hour % 12;
-      return `${h12}:00 ${period}`;
+      return `${h12}:${String(min % 60).padStart(2, '0')} ${period}`;
     };
-    const pad = (hour: number) => String(hour).padStart(2, '0');
-    return { start: `${pad(h)}:00`, end: `${pad(h + 1)}:00`, label: `${fmt(h)} — ${fmt(h + 1)}` };
+    const hhmm = (min: number) => `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`;
+    return { start: hhmm(startMin), end: hhmm(endMin), label: `${fmt(startMin)} — ${fmt(endMin)}` };
   });
 
   blockedRanges = signal<{ start: number; end: number }[]>([]);
 
-  // Blocked hours are hidden from the list entirely; `i` keeps the absolute index
+  // Blocked slots are hidden from the list entirely; `i` keeps the absolute index
   visibleSlots = computed(() =>
     this.timeSlots
       .map((slot, i) => ({ slot, i }))
@@ -189,15 +194,15 @@ export class BookingComponent implements OnInit, OnDestroy {
     const s = this.rangeStart();
     const e = this.rangeEnd();
 
-    // No selection yet, or a finished range: start over at the clicked hour
+    // No selection yet, or a finished range: start over at the clicked slot
     if (s === null || e === null || e !== s) {
       this.rangeStart.set(index);
       this.rangeEnd.set(index);
       return;
     }
 
-    // A single hour is selected: clicking a later hour extends the range
-    // as long as every hour in between is available
+    // A single slot is selected: clicking a later slot extends the range
+    // as long as every slot in between is available
     if (index > s) {
       for (let i = s + 1; i <= index; i++) {
         if (this.isSlotBlocked(this.timeSlots[i])) {
@@ -227,10 +232,15 @@ export class BookingComponent implements OnInit, OnDestroy {
     const s = this.rangeStart();
     const e = this.rangeEnd();
     if (s === null || e === null) return '';
-    const hours = e - s + 1;
+    const minutes = (e - s + 1) * SLOT_MINUTES;
+    const hours = Math.floor(minutes / 60);
+    const rest = minutes % 60;
+    const parts: string[] = [];
+    if (hours > 0) parts.push(`${hours} hour${hours > 1 ? 's' : ''}`);
+    if (rest > 0) parts.push(`${rest} min`);
     const startLabel = this.timeSlots[s].label.split(' — ')[0];
     const endLabel = this.timeSlots[e].label.split(' — ')[1];
-    return `${startLabel} — ${endLabel} (${hours} hour${hours > 1 ? 's' : ''})`;
+    return `${startLabel} — ${endLabel} (${parts.join(' ')})`;
   }
 
   prevMonth() {

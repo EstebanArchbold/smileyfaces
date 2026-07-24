@@ -30,11 +30,14 @@ export class ConfirmationComponent implements OnInit {
   startTime = '';
   hoursCount = '';
 
-  hourOptions = Array.from({ length: 15 }, (_, i) => {
-    const h = 8 + i;
+  // Start times in 15-minute steps, 8 AM to 10 PM
+  hourOptions = Array.from({ length: 57 }, (_, i) => {
+    const min = 8 * 60 + i * 15;
+    const h = Math.floor(min / 60);
     const period = h >= 12 ? 'PM' : 'AM';
     const h12 = h % 12 === 0 ? 12 : h % 12;
-    return { value: `${String(h).padStart(2, '0')}:00`, label: `${h12}:00 ${period}` };
+    const mm = String(min % 60).padStart(2, '0');
+    return { value: `${String(h).padStart(2, '0')}:${mm}`, label: `${h12}:${mm} ${period}` };
   });
   hoursOptions = Array.from({ length: 8 }, (_, i) => String(i + 1));
 

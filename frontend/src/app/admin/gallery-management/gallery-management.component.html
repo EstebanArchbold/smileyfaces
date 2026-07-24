@@ -35,9 +35,14 @@
         <div class="gallery-card">
           <div class="gallery-card-image">
             <img [src]="item.image_path" [alt]="item.title || 'Gallery image'">
-            <button class="delete-btn" (click)="deleteItem(item.id)" title="Delete">
-              <span class="material-symbols-outlined">delete</span>
-            </button>
+            <div class="card-actions">
+              <button class="edit-btn" (click)="openEdit(item)" title="Edit">
+                <span class="material-symbols-outlined">edit</span>
+              </button>
+              <button class="delete-btn" (click)="deleteItem(item.id)" title="Delete">
+                <span class="material-symbols-outlined">delete</span>
+              </button>
+            </div>
           </div>
           <div class="gallery-card-info">
             <span class="body-sm">{{ item.title || 'Untitled' }}</span>
@@ -52,3 +57,50 @@
         </div>
       }
     </div>
+
+@if (editItem(); as ei) {
+  <div class="modal-backdrop" (click)="closeEdit()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="title-lg">Edit Image</h3>
+        <button class="close-btn" (click)="closeEdit()">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <p class="body-sm text-muted modal-desc">
+        Change the title or category, and optionally replace the image itself.
+      </p>
+
+      <div class="modal-preview">
+        <img [src]="ei.image_path" [alt]="ei.title || 'Gallery image'">
+      </div>
+
+      <div class="modal-field">
+        <label class="label-sm">Title (optional)</label>
+        <input type="text" [(ngModel)]="editTitle" placeholder="Image title">
+      </div>
+      <div class="modal-field">
+        <label class="label-sm">Category</label>
+        <select [(ngModel)]="editCategory">
+          @for (cat of categories(); track cat.value) {
+            <option [value]="cat.value">{{ cat.label }}</option>
+          }
+        </select>
+      </div>
+      <div class="modal-field">
+        <label class="label-sm">Replace image (optional)</label>
+        <input type="file" accept="image/*" (change)="onEditFileSelected($event)">
+      </div>
+
+      @if (editError()) {
+        <div class="modal-error">{{ editError() }}</div>
+      }
+
+      <div class="modal-actions">
+        <button class="upload-btn" (click)="saveEdit()" [disabled]="editSaving()">
+          @if (editSaving()) { Saving... } @else { Save Changes }
+        </button>
+      </div>
+    </div>
+  </div>
+}

@@ -69,7 +69,7 @@
         <!-- Step 3: Time Slot -->
         <div class="booking-time">
           <h3 class="headline-sm">Select Time</h3>
-          <p class="body-sm text-muted range-hint">Tap your start hour, then tap a later hour to book more than one hour.</p>
+          <p class="body-sm text-muted range-hint">Tap your start time, then tap a later time to book a longer slot.</p>
           <div class="time-slots">
             @for (item of visibleSlots(); track item.slot.start) {
               <button
@@ -81,7 +81,7 @@
               </button>
             }
             @if (visibleSlots().length === 0 && selectedDate()) {
-              <p class="body-sm text-muted">No hours available for this date. Please pick another day.</p>
+              <p class="body-sm text-muted">No times available for this date. Please pick another day.</p>
             }
           </div>
           @if (hasSelection()) {

@@ -27,6 +27,10 @@ export class GalleryService {
     return this.api.upload<GalleryItem>('/gallery', formData);
   }
 
+  update(id: string, formData: FormData): Observable<GalleryItem> {
+    return this.api.uploadPut<GalleryItem>(`/gallery/${id}`, formData);
+  }
+
   delete(id: string): Observable<void> {
     return this.api.delete<void>(`/gallery/${id}`);
   }

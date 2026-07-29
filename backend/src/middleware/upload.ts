@@ -51,18 +51,24 @@ export async function compressUpload(req: Request, _res: Response, next: NextFun
   const webpName = `${path.parse(file.filename).name}.webp`;
   const webpPath = path.join(file.destination, webpName);
 
+  // Everything is inside the catch on purpose: Express 4 does not handle a
+  // rejected promise from async middleware, so anything thrown here would hang
+  // the request with no response at all rather than surface an error.
   try {
     await compressToWebp(file.path, webpPath);
+    // Read the size before touching anything, so a failure here still leaves
+    // the original file and req.file untouched.
+    const size = fs.statSync(webpPath).size;
+    fs.unlinkSync(file.path);
+    file.filename = webpName;
+    file.path = webpPath;
+    file.mimetype = 'image/webp';
+    file.size = size;
   } catch (err) {
     // Leave the original in place: a photo served heavy beats a failed upload.
-    next();
-    return;
+    console.error('Could not compress upload, keeping the original:', err);
+    if (fs.existsSync(webpPath)) fs.unlinkSync(webpPath);
   }
 
-  fs.unlinkSync(file.path);
-  file.filename = webpName;
-  file.path = webpPath;
-  file.mimetype = 'image/webp';
-  file.size = fs.statSync(webpPath).size;
   next();
 }

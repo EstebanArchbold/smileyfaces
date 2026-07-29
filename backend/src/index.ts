@@ -3,6 +3,7 @@ dotenv.config();
 
 import express from 'express';
 import cors from 'cors';
+import multer from 'multer';
 import path from 'path';
 import { initDatabase } from './config/database';
 import authRoutes from './routes/auth.routes';
@@ -36,6 +37,36 @@ app.use('/api/push', pushRoutes);
 // Health check
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Without this, a rejected upload fell through to Express's default handler,
+// which answers with an HTML error page. The admin reads `error` off a JSON
+// body, so every failure showed up as no message at all.
+app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error('Request failed:', err);
+
+  // Thrown by busboy when the request body ends mid-form — typically a phone
+  // dropping its connection partway through an upload.
+  if (err.message === 'Unexpected end of form') {
+    res.status(400).json({ error: 'The upload was interrupted. Please check your connection and try again.' });
+    return;
+  }
+
+  if (err instanceof multer.MulterError) {
+    const message = err.code === 'LIMIT_FILE_SIZE'
+      ? 'That image is too large. Please use one under 50MB.'
+      : `Upload failed: ${err.message}`;
+    res.status(400).json({ error: message });
+    return;
+  }
+
+  // The file-type rejection from the upload middleware.
+  if (err.message.startsWith('Only image files')) {
+    res.status(400).json({ error: err.message });
+    return;
+  }
+
+  res.status(500).json({ error: 'Something went wrong. Please try again.' });
 });
 
 // Initialize database then start server

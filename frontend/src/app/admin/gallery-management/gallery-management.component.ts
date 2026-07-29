@@ -15,6 +15,7 @@ import { compressImage } from '../../core/utils/image.util';
 export class GalleryManagementComponent implements OnInit {
   items = signal<GalleryItem[]>([]);
   uploading = signal(false);
+  uploadError = signal<string | null>(null);
   title = '';
   category = 'private';
   selectedFile: File | null = null;
@@ -55,15 +56,21 @@ export class GalleryManagementComponent implements OnInit {
     }
   }
 
-  upload() {
+  async upload() {
     if (!this.selectedFile) return;
 
+    this.uploading.set(true);
+    this.uploadError.set(null);
+
     const formData = new FormData();
-    formData.append('image', this.selectedFile);
+    // Downscaled first, like the edit and hero/about paths already do. Sending
+    // a multi-megabyte phone photo over mobile data was long enough for the
+    // connection to drop mid-request, which reached the server as a truncated
+    // form rather than as any kind of readable error.
+    formData.append('image', await compressImage(this.selectedFile));
     formData.append('category', this.category);
     if (this.title) formData.append('title', this.title);
 
-    this.uploading.set(true);
     this.galleryService.upload(formData).subscribe({
       next: () => {
         this.loadGallery();
@@ -71,7 +78,10 @@ export class GalleryManagementComponent implements OnInit {
         this.selectedFile = null;
         this.uploading.set(false);
       },
-      error: () => this.uploading.set(false),
+      error: err => {
+        this.uploading.set(false);
+        this.uploadError.set(err.error?.error || 'Could not upload the image. Please try again.');
+      },
     });
   }
 

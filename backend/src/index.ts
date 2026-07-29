@@ -19,7 +19,10 @@ const PORT = process.env.PORT || 3001;
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+// Filenames are UUIDs and a replacement upload always gets a new one, so a
+// cached image can never go stale — without this every visit revalidated each
+// photo individually.
+app.use('/uploads', express.static(path.join(__dirname, '../uploads'), { maxAge: '1y', immutable: true }));
 
 // Routes
 app.use('/api/auth', authRoutes);

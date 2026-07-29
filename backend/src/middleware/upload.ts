@@ -1,6 +1,9 @@
 import multer from 'multer';
 import path from 'path';
+import fs from 'fs';
+import { NextFunction, Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
+import { compressToWebp, PASSTHROUGH_MIME } from '../config/images';
 
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => {
@@ -24,5 +27,42 @@ const fileFilter = (_req: Express.Request, file: Express.Multer.File, cb: multer
 export const upload = multer({
   storage,
   fileFilter,
+  // Stays generous because this is the size accepted from the camera; what
+  // actually lands on disk is whatever compressUpload produces below.
   limits: { fileSize: 50 * 1024 * 1024 }, // 50MB — high-quality photos
 });
+
+/**
+ * Runs after multer and replaces the file it just wrote with a WebP version,
+ * so a 10MB camera photo is not what ends up being served.
+ *
+ * Controllers keep reading `file.filename`, so the extension swap is reflected
+ * back onto req.file rather than handled at each call site. Multer writes to
+ * disk first (instead of memoryStorage) to keep a burst of 50MB uploads from
+ * sitting in memory all at once.
+ */
+export async function compressUpload(req: Request, _res: Response, next: NextFunction): Promise<void> {
+  const file = req.file;
+  if (!file || PASSTHROUGH_MIME.includes(file.mimetype)) {
+    next();
+    return;
+  }
+
+  const webpName = `${path.parse(file.filename).name}.webp`;
+  const webpPath = path.join(file.destination, webpName);
+
+  try {
+    await compressToWebp(file.path, webpPath);
+  } catch (err) {
+    // Leave the original in place: a photo served heavy beats a failed upload.
+    next();
+    return;
+  }
+
+  fs.unlinkSync(file.path);
+  file.filename = webpName;
+  file.path = webpPath;
+  file.mimetype = 'image/webp';
+  file.size = fs.statSync(webpPath).size;
+  next();
+}

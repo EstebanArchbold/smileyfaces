@@ -8,8 +8,12 @@
   <link rel="icon" type="image/png" href="assets/logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <!-- The production build inlines this stylesheet into the HTML, so it costs no
+       request; only the woff2 files are fetched at runtime. Material Symbols is
+       no longer listed here — it is self-hosted in styles.scss, which keeps it
+       same-origin (nginx caches it for a year, and the service worker stores it
+       for offline use) and lets us pin font-display. -->
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,600;0,700;1,400&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined" rel="stylesheet">
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#1c5944">
   <!-- iOS: home-screen icon and standalone (full-screen) mode -->

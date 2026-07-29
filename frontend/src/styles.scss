@@ -203,7 +203,35 @@ input, textarea, select {
 .text-muted { color: var(--on-surface-variant); }
 
 // === MATERIAL ICONS ===
+// Self-hosted rather than pulled from fonts.gstatic.com so the file is
+// same-origin (nginx serves it with a one-year immutable cache and the service
+// worker keeps it for offline use) and so font-display is ours to set. block
+// matters here: these spans fall back to rendering their ligature text
+// ("brush", "chevron_right") if the font is missing, and block leaves the glyph
+// box empty instead. The full icon set is shipped on purpose — event-type icons
+// are a free-text field in admin settings, so any icon name has to resolve.
+@font-face {
+  font-family: 'Material Symbols Outlined';
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url('/assets/fonts/material-symbols-outlined.woff2') format('woff2');
+}
+
 .material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
   vertical-align: middle;
 }

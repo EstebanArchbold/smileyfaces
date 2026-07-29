@@ -1,12 +1,15 @@
 import { Component, Input, OnChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { BaseChartDirective } from 'ng2-charts';
+import { BaseChartDirective, provideCharts, withDefaultRegisterables } from 'ng2-charts';
 import { ChartConfiguration } from 'chart.js';
 
 @Component({
   selector: 'app-revenue-chart',
   standalone: true,
   imports: [CommonModule, BaseChartDirective],
+  // Declared here rather than in appConfig so Chart.js is bundled with the lazy
+  // dashboard chunk instead of the initial bundle every visitor downloads.
+  providers: [provideCharts(withDefaultRegisterables())],
   template: `
     <div class="chart-card">
       <h3 class="title-lg">Revenue Over Time</h3>

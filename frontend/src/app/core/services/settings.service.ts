@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ApiService } from './api.service';
-import { Observable } from 'rxjs';
+import { Observable, shareReplay, tap } from 'rxjs';
 
 export interface Settings {
   hourly_rate?: string;
@@ -19,25 +19,42 @@ export interface Settings {
 
 @Injectable({ providedIn: 'root' })
 export class SettingsService {
+  // The home page alone asks for settings from two components (hero + gallery
+  // preview); without sharing, each subscription fired its own /settings request.
+  private cached$: Observable<Settings> | null = null;
+
   constructor(private api: ApiService) {}
 
   get(): Observable<Settings> {
-    return this.api.get<Settings>('/settings');
+    if (!this.cached$) {
+      this.cached$ = this.api.get<Settings>('/settings').pipe(
+        // Drop the cache on failure, otherwise shareReplay would keep replaying
+        // the error to every later caller.
+        tap({ error: () => this.invalidate() }),
+        shareReplay(1),
+      );
+    }
+    return this.cached$;
   }
 
   update(settings: Partial<Settings>): Observable<Settings> {
-    return this.api.put<Settings>('/settings', settings);
+    return this.api.put<Settings>('/settings', settings).pipe(tap(() => this.invalidate()));
   }
 
   uploadHeroImage(file: File): Observable<Settings> {
     const formData = new FormData();
     formData.append('image', file);
-    return this.api.upload<Settings>('/settings/hero-image', formData);
+    return this.api.upload<Settings>('/settings/hero-image', formData).pipe(tap(() => this.invalidate()));
   }
 
   uploadAboutImage(file: File): Observable<Settings> {
     const formData = new FormData();
     formData.append('image', file);
-    return this.api.upload<Settings>('/settings/about-image', formData);
+    return this.api.upload<Settings>('/settings/about-image', formData).pipe(tap(() => this.invalidate()));
+  }
+
+  /** Forces the next get() to hit the API again. */
+  private invalidate() {
+    this.cached$ = null;
   }
 }

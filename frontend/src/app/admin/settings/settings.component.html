@@ -72,32 +72,6 @@
     </div>
 
     <div class="settings-card">
-      <h3 class="title-lg">About Image</h3>
-      <p class="body-sm text-muted settings-desc">This photo is displayed in the story section of the About page.</p>
-
-      <div class="hero-image-row">
-        @if (aboutPreview()) {
-          <img class="hero-thumb" [src]="aboutPreview()" alt="New about image preview">
-        } @else if (aboutImage()) {
-          <img class="hero-thumb" [src]="aboutImage()" alt="Current about image">
-        } @else {
-          <div class="hero-thumb hero-thumb-empty">
-            <span class="material-symbols-outlined">image</span>
-          </div>
-        }
-        <div class="hero-image-actions">
-          <input type="file" accept="image/*" (change)="onAboutFileSelected($event)">
-          <button class="save-btn" (click)="uploadAboutImage()" [disabled]="!aboutFile || aboutUploading()">
-            @if (aboutUploading()) { Uploading... } @else { Upload Image }
-          </button>
-        </div>
-      </div>
-      @if (aboutError()) {
-        <span class="save-error">{{ aboutError() }}</span>
-      }
-    </div>
-
-    <div class="settings-card">
       <h3 class="title-lg">Site Content</h3>
       <p class="body-sm text-muted settings-desc">Edit the texts shown on the home page. Each field allows a maximum of 50 words.</p>
 
@@ -167,22 +141,70 @@
 
     <div class="settings-card">
       <h3 class="title-lg">Testimonials</h3>
-      <p class="body-sm text-muted settings-desc">Client reviews shown in the rotating slideshow on the home page. If there are none, the section is hidden.</p>
+      <p class="body-sm text-muted settings-desc">
+        Only <strong>approved</strong> reviews appear in the home page slideshow. Reviews clients send through their review link arrive as <strong>pending</strong>. Archiving hides a review without deleting it.
+      </p>
+
+      <div class="testimonial-tabs">
+        <button type="button" class="tab-btn" [class.active]="testimonialTab() === 'pending'" (click)="selectTestimonialTab('pending')">
+          Pending
+          @if (pendingCount() > 0) { <span class="tab-count">{{ pendingCount() }}</span> }
+        </button>
+        <button type="button" class="tab-btn" [class.active]="testimonialTab() === 'approved'" (click)="selectTestimonialTab('approved')">
+          Approved
+        </button>
+        <button type="button" class="tab-btn" [class.active]="testimonialTab() === 'archived'" (click)="selectTestimonialTab('archived')">
+          Archived
+        </button>
+      </div>
 
       <div class="testimonial-list">
-        @for (item of testimonials(); track item.id) {
+        @for (item of visibleTestimonials(); track item.id) {
           <div class="testimonial-row">
             <textarea rows="2" [(ngModel)]="item.quote" placeholder="What the client said"></textarea>
+
+            @if (item.images.length > 0) {
+              <div class="testimonial-photos">
+                @for (image of item.images; track image) {
+                  <a [href]="image" target="_blank" rel="noopener">
+                    <img [src]="image" alt="Photo from the review" loading="lazy">
+                  </a>
+                }
+              </div>
+            }
+
+            @if (item.submitted_at) {
+              <span class="body-sm text-muted testimonial-meta">
+                Sent by the client on {{ submittedLabel(item) }}@if (item.client_email) { · {{ item.client_email }} }
+              </span>
+            }
+
             <div class="testimonial-footer">
               <input type="text" [(ngModel)]="item.author" placeholder="Client name">
-              <button class="icon-btn" title="Save" (click)="updateTestimonial(item)">
+              @if (item.status !== 'approved') {
+                <button class="icon-btn approve" title="Approve — show on the home page" (click)="setTestimonialStatus(item, 'approved')">
+                  <span class="material-symbols-outlined">check_circle</span>
+                </button>
+              }
+              @if (item.status !== 'archived') {
+                <button class="icon-btn" title="Archive — hide without deleting" (click)="setTestimonialStatus(item, 'archived')">
+                  <span class="material-symbols-outlined">inventory_2</span>
+                </button>
+              } @else {
+                <button class="icon-btn" title="Move back to pending" (click)="setTestimonialStatus(item, 'pending')">
+                  <span class="material-symbols-outlined">undo</span>
+                </button>
+              }
+              <button class="icon-btn" title="Save text changes" (click)="updateTestimonial(item)">
                 <span class="material-symbols-outlined">save</span>
               </button>
-              <button class="icon-btn danger" title="Delete" (click)="deleteTestimonial(item)">
+              <button class="icon-btn danger" title="Delete permanently" (click)="deleteTestimonial(item)">
                 <span class="material-symbols-outlined">delete</span>
               </button>
             </div>
           </div>
+        } @empty {
+          <p class="body-sm text-muted empty-testimonials">No {{ testimonialTab() }} reviews.</p>
         }
       </div>
 

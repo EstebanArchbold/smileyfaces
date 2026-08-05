@@ -53,6 +53,12 @@ export class SettingsService {
     return this.api.upload<Settings>('/settings/about-image', formData).pipe(tap(() => this.invalidate()));
   }
 
+  uploadServiceImage(slug: string, file: File): Observable<Settings> {
+    const formData = new FormData();
+    formData.append('image', file);
+    return this.api.upload<Settings>(`/settings/service-image/${slug}`, formData).pipe(tap(() => this.invalidate()));
+  }
+
   /** Forces the next get() to hit the API again. */
   private invalidate() {
     this.cached$ = null;

@@ -1,0 +1,75 @@
+<section class="review-page section-padding">
+  <div class="container">
+    @if (success()) {
+      <div class="success-card">
+        <span class="material-symbols-outlined success-icon">favorite</span>
+        <h2 class="headline-lg">Thank You!</h2>
+        <p class="body-lg text-muted">
+          Your review means the world to us. We'll take a look and it may appear on our home page soon.
+        </p>
+        <a routerLink="/" class="submit-btn back-home">Back to Home</a>
+      </div>
+    } @else {
+      <div class="review-header">
+        <p class="label-sm text-muted">Kind Words</p>
+        <h1 class="headline-lg">Leave a Review</h1>
+        <p class="body-md text-muted">
+          @if (clientName) { Hi {{ clientName }}! }
+          We'd love to hear how your event@if (eventDate) { on <strong>{{ eventDate }}</strong>} went — and to see a photo or two if you have them.
+        </p>
+      </div>
+
+      <form (ngSubmit)="submit()" class="review-form">
+        <div class="form-row">
+          <div class="form-field">
+            <label class="label-sm" for="clientName">Your Name *</label>
+            <input id="clientName" type="text" [(ngModel)]="clientName" name="clientName" placeholder="Your name" required>
+          </div>
+          <div class="form-field">
+            <label class="label-sm" for="clientEmail">Email</label>
+            <input id="clientEmail" type="email" [(ngModel)]="clientEmail" name="clientEmail" placeholder="(optional)">
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label class="label-sm" for="quote">Your Review *</label>
+          <textarea id="quote" [(ngModel)]="quote" name="quote" rows="5"
+            placeholder="Tell us about your experience..." required></textarea>
+        </div>
+
+        <div class="form-field">
+          <label class="label-sm">Photos <span class="text-muted">(up to {{ maxImages }})</span></label>
+
+          @if (images().length > 0) {
+            <div class="photo-grid">
+              @for (image of images(); track image.preview; let i = $index) {
+                <div class="photo-thumb">
+                  <img [src]="image.preview" alt="Selected photo">
+                  <button type="button" class="remove-photo" (click)="removeImage(i)" aria-label="Remove photo">
+                    <span class="material-symbols-outlined">close</span>
+                  </button>
+                </div>
+              }
+            </div>
+          }
+
+          @if (images().length < maxImages) {
+            <label class="photo-picker">
+              <span class="material-symbols-outlined">add_photo_alternate</span>
+              <span class="body-sm">{{ images().length ? 'Add another photo' : 'Add photos' }}</span>
+              <input type="file" accept="image/*" multiple (change)="onFilesSelected($event)" hidden>
+            </label>
+          }
+        </div>
+
+        @if (error()) {
+          <div class="form-error">{{ error() }}</div>
+        }
+
+        <button type="submit" class="submit-btn" [disabled]="!canSubmit() || submitting()">
+          @if (submitting()) { Sending... } @else { Send Review }
+        </button>
+      </form>
+    }
+  </div>
+</section>

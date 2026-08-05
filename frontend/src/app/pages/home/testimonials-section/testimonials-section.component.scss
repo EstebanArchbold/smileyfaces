@@ -59,6 +59,22 @@
   &::after { content: '\201D'; }
 }
 
+.quote-photos {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.75rem;
+
+  img {
+    width: 104px;
+    height: 104px;
+    object-fit: cover;
+    border-radius: 1rem;
+    box-shadow: 0 8px 20px rgba(125, 82, 94, 0.15);
+  }
+}
+
 .quote-author {
   display: block;
   font-style: normal;
@@ -105,4 +121,5 @@
 @media (max-width: 640px) {
   .testimonials-section { padding: 4rem 1.25rem; }
   .quote-text { font-size: 1.5rem; }
+  .quote-photos img { width: 80px; height: 80px; }
 }

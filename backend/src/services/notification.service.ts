@@ -50,3 +50,31 @@ export function notifyAdmin(booking: Booking, kind: NotificationKind): void {
     console.error('[Notify] Email failed:', err)
   );
 }
+
+/**
+ * A client submitted a review through the "leave a review" link. It sits in
+ * pending until the admin approves it, so this is the only thing that tells
+ * them there is something to look at.
+ */
+export function notifyNewReview(author: string, quote: string, imageCount: number): void {
+  const title = 'New review awaiting approval';
+  const photos = imageCount === 1 ? '1 photo' : `${imageCount} photos`;
+  const body = `${author} left a review${imageCount > 0 ? ` (${photos})` : ''}`;
+
+  const emailBody = [
+    'A client submitted a review. It is pending approval and is not visible on the site yet.',
+    '',
+    `From:   ${author}`,
+    `Photos: ${imageCount}`,
+    '',
+    'Review:',
+    quote,
+    '',
+    'Approve or archive it from Admin → Settings → Testimonials.',
+  ].join('\n');
+
+  void sendPush(title, body).catch(err => console.error('[Notify] Push failed:', err));
+  void sendEmail(`[Smiley Faces] ${title}: ${author}`, emailBody).catch(err =>
+    console.error('[Notify] Email failed:', err)
+  );
+}

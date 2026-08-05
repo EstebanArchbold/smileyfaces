@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { getDatabase } from '../config/database';
 import { isConfigured } from '../config/google-calendar';
+import { SERVICE_CONTENT_KEYS, isServiceSlug, serviceSettingKey } from '../config/services';
 
 const MAX_WORDS = 50;
 
@@ -15,6 +16,23 @@ const CONTENT_KEYS = [
   'gallery_label',
   'gallery_title',
   'gallery_description',
+  // About page, edited from Admin → About
+  'about_label',
+  'about_title',
+  'about_story_title',
+  'about_story_1',
+  'about_story_2',
+  'about_value1_title',
+  'about_value1_text',
+  'about_value2_title',
+  'about_value2_text',
+  'about_value3_title',
+  'about_value3_text',
+  'about_cta_title',
+  'about_cta_text',
+  'about_cta_button',
+  // Copy for the three service pages, edited from Admin → Services
+  ...SERVICE_CONTENT_KEYS,
 ];
 
 function countWords(text: string): number {
@@ -106,4 +124,15 @@ export async function uploadHeroImage(req: Request, res: Response): Promise<void
 
 export async function uploadAboutImage(req: Request, res: Response): Promise<void> {
   await saveImageSetting('about_image', req, res);
+}
+
+// The header image of a single service page. The slug is whitelisted so the
+// URL can't be used to write an arbitrary settings key.
+export async function uploadServiceImage(req: Request, res: Response): Promise<void> {
+  const { slug } = req.params;
+  if (!isServiceSlug(slug)) {
+    res.status(404).json({ error: 'Unknown service' });
+    return;
+  }
+  await saveImageSetting(serviceSettingKey(slug, 'image'), req, res);
 }

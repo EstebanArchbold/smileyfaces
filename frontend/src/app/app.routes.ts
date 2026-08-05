@@ -11,6 +11,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/gallery/gallery.component').then(m => m.GalleryComponent),
   },
   {
+    path: 'services/:slug',
+    loadComponent: () => import('./pages/service/service.component').then(m => m.ServiceComponent),
+  },
+  {
     path: 'booking',
     loadComponent: () => import('./pages/booking/booking.component').then(m => m.BookingComponent),
   },
@@ -29,6 +33,14 @@ export const routes: Routes = [
   {
     path: 'confirm',
     loadComponent: () => import('./pages/confirmation/confirmation.component').then(m => m.ConfirmationComponent),
+  },
+  {
+    path: 'review/:id',
+    loadComponent: () => import('./pages/review/review.component').then(m => m.ReviewComponent),
+  },
+  {
+    path: 'review',
+    loadComponent: () => import('./pages/review/review.component').then(m => m.ReviewComponent),
   },
   {
     path: 'admin/login',
@@ -50,6 +62,14 @@ export const routes: Routes = [
       {
         path: 'gallery',
         loadComponent: () => import('./admin/gallery-management/gallery-management.component').then(m => m.GalleryManagementComponent),
+      },
+      {
+        path: 'services',
+        loadComponent: () => import('./admin/services-management/services-management.component').then(m => m.ServicesManagementComponent),
+      },
+      {
+        path: 'about',
+        loadComponent: () => import('./admin/about-management/about-management.component').then(m => m.AboutManagementComponent),
       },
       {
         path: 'settings',

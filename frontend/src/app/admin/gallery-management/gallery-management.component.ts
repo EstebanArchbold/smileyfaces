@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { GalleryService, GalleryItem } from '../../core/services/gallery.service';
 import { EventTypeService } from '../../core/services/event-type.service';
 import { compressImage } from '../../core/utils/image.util';
+import { SERVICES } from '../../core/services/service-catalog';
 
 @Component({
   selector: 'app-gallery-management',
@@ -18,14 +19,18 @@ export class GalleryManagementComponent implements OnInit {
   uploadError = signal<string | null>(null);
   title = '';
   category = 'private';
+  // '' means the photo isn't shown on any service page.
+  service = '';
   selectedFile: File | null = null;
 
   categories = signal<{ value: string; label: string }[]>([]);
+  readonly services = SERVICES;
 
   // Edit modal
   editItem = signal<GalleryItem | null>(null);
   editTitle = '';
   editCategory = '';
+  editService = '';
   editFile: File | null = null;
   editSaving = signal(false);
   editError = signal<string | null>(null);
@@ -49,6 +54,10 @@ export class GalleryManagementComponent implements OnInit {
     this.galleryService.getAll().subscribe(items => this.items.set(items));
   }
 
+  serviceLabel(slug: string | null): string | null {
+    return this.services.find(s => s.slug === slug)?.label || null;
+  }
+
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
@@ -69,6 +78,7 @@ export class GalleryManagementComponent implements OnInit {
     // form rather than as any kind of readable error.
     formData.append('image', await compressImage(this.selectedFile));
     formData.append('category', this.category);
+    formData.append('service', this.service);
     if (this.title) formData.append('title', this.title);
 
     this.galleryService.upload(formData).subscribe({
@@ -95,6 +105,7 @@ export class GalleryManagementComponent implements OnInit {
     this.editItem.set(item);
     this.editTitle = item.title || '';
     this.editCategory = item.category;
+    this.editService = item.service || '';
     this.editFile = null;
     this.editError.set(null);
   }
@@ -119,6 +130,7 @@ export class GalleryManagementComponent implements OnInit {
     const formData = new FormData();
     formData.append('title', this.editTitle);
     formData.append('category', this.editCategory);
+    formData.append('service', this.editService);
 
     // Only sent when the admin picked a replacement; otherwise the image stays
     if (this.editFile) {

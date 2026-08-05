@@ -13,6 +13,28 @@
 
     <div class="nav-links" [class.open]="menuOpen()">
       <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMenu()">Home</a>
+      <div class="nav-dropdown" [class.open]="servicesOpen()">
+        <button
+          type="button"
+          class="dropdown-trigger"
+          [class.active]="servicesOpen()"
+          (click)="toggleServices($event)"
+          [attr.aria-expanded]="servicesOpen()">
+          Services
+          <span class="material-symbols-outlined dropdown-chevron">expand_more</span>
+        </button>
+        <div class="dropdown-menu">
+          @for (service of services; track service.slug) {
+            <a
+              [routerLink]="['/services', service.slug]"
+              routerLinkActive="active"
+              (click)="closeMenu()">
+              <span class="material-symbols-outlined">{{ service.icon }}</span>
+              {{ service.label }}
+            </a>
+          }
+        </div>
+      </div>
       <a routerLink="/gallery" routerLinkActive="active" (click)="closeMenu()">Gallery</a>
       <a routerLink="/booking" routerLinkActive="active" (click)="closeMenu()">Booking</a>
       <a routerLink="/about" routerLinkActive="active" (click)="closeMenu()">About</a>

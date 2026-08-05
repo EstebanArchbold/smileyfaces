@@ -19,6 +19,10 @@ export interface Booking {
   allergies: string | null;
   comments: string | null;
   confirmation_submitted_at: string | null;
+  discount: string | number | null;
+  discount_note: string | null;
+  extra_charges: { label: string; amount: number }[];
+  admin_notes: string | null;
   status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
   google_event_id: string | null;
   created_at: string;
@@ -31,6 +35,7 @@ export interface GalleryItem {
   category: string;
   image_path: string;
   display_order: number;
+  service: string | null;
   created_at: string;
 }
 
@@ -40,6 +45,19 @@ export interface EventType {
   label: string;
   icon: string;
   display_order: number;
+  created_at: string;
+}
+
+export interface Testimonial {
+  id: string;
+  author: string;
+  quote: string;
+  display_order: number;
+  status: 'pending' | 'approved' | 'archived';
+  images: string[];
+  booking_id: string | null;
+  client_email: string | null;
+  submitted_at: string | null;
   created_at: string;
 }
 

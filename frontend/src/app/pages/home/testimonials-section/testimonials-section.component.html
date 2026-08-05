@@ -8,6 +8,13 @@
         @for (item of items(); track item.id; let i = $index) {
           <blockquote class="slide" [class.active]="current() === i">
             <p class="quote-text">{{ item.quote }}</p>
+            @if (item.images.length > 0) {
+              <div class="quote-photos">
+                @for (image of item.images; track image) {
+                  <img [src]="image" [alt]="'Photo from ' + item.author" loading="lazy">
+                }
+              </div>
+            }
             <cite class="quote-author label-md">{{ item.author }}</cite>
           </blockquote>
         }

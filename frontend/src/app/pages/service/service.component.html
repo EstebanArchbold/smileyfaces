@@ -1,0 +1,70 @@
+@if (service(); as svc) {
+  <!-- Same hero as the home page, mirrored: image on the left, copy on the right -->
+  <section class="service-hero">
+    <div class="service-hero-inner">
+      <div class="service-hero-image">
+        @if (image()) {
+          <img class="service-hero-photo" [src]="image()" [alt]="svc.label">
+        } @else {
+          <div class="service-hero-placeholder">
+            <span class="material-symbols-outlined">{{ svc.icon }}</span>
+            <p>{{ svc.label }}</p>
+          </div>
+        }
+      </div>
+
+      <div class="service-hero-content">
+        <h1 class="display-lg">
+          @for (line of titleLines(); track $index) {
+            <span [class.text-emerald]="$index === 1">{{ line }}</span>@if (!$last) {<br>}
+          }
+        </h1>
+        <p class="body-lg service-subtitle">{{ subtitle() }}</p>
+        <button type="button" class="cta-btn" (click)="scrollToBooking()">{{ cta() }}</button>
+        <div class="service-badge">
+          <span class="material-symbols-outlined">{{ svc.icon }}</span>
+          <span class="body-sm">{{ badge() }}</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="service-gallery section-padding">
+    <div class="container">
+      <div class="service-gallery-header">
+        <p class="label-sm text-muted">{{ svc.label }}</p>
+        <h2 class="headline-lg">{{ galleryTitle() }}</h2>
+        <p class="body-md text-muted">{{ galleryDescription() }}</p>
+      </div>
+
+      <div class="masonry-grid">
+        @for (item of items(); track item.id; let i = $index) {
+          <div class="masonry-item" (click)="openLightbox(i)">
+            <img [src]="item.image_path" [alt]="item.title || svc.label" loading="lazy">
+            @if (item.title) {
+              <div class="masonry-overlay">
+                <span class="body-sm">{{ item.title }}</span>
+              </div>
+            }
+          </div>
+        }
+        @if (items().length === 0) {
+          <div class="empty-gallery">
+            <span class="material-symbols-outlined">collections</span>
+            <p class="body-lg">This gallery is being curated. Check back soon.</p>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <div id="service-booking">
+    <app-booking-section />
+  </div>
+
+  <app-lightbox
+    [images]="imageUrls"
+    [currentIndex]="lightboxIndex()"
+    [visible]="lightboxVisible()"
+    (close)="closeLightbox()" />
+}

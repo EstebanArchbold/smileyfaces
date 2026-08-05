@@ -47,6 +47,11 @@ export async function initDatabase(): Promise<Pool> {
         created_at TIMESTAMPTZ DEFAULT NOW()
       );
 
+      -- Which service page a photo belongs to. Independent from the category
+      -- (the event type), so a photo can be both a private-event shot and a
+      -- glitter-tattoos shot. NULL means it only shows in the main gallery.
+      ALTER TABLE gallery ADD COLUMN IF NOT EXISTS service TEXT;
+
       CREATE TABLE IF NOT EXISTS settings (
         key TEXT PRIMARY KEY,
         value TEXT NOT NULL
@@ -72,6 +77,15 @@ export async function initDatabase(): Promise<Pool> {
       ALTER TABLE bookings ADD COLUMN IF NOT EXISTS allergies TEXT;
       ALTER TABLE bookings ADD COLUMN IF NOT EXISTS comments TEXT;
       ALTER TABLE bookings ADD COLUMN IF NOT EXISTS confirmation_submitted_at TIMESTAMPTZ;
+
+      -- Money and private notes the admin adds after talking to the client.
+      -- Amounts are NUMERIC, not floats, so cents never drift.
+      ALTER TABLE bookings ADD COLUMN IF NOT EXISTS discount NUMERIC(10,2) DEFAULT 0;
+      ALTER TABLE bookings ADD COLUMN IF NOT EXISTS discount_note TEXT;
+      -- [{ "label": "Parking", "amount": 15 }, ...]
+      ALTER TABLE bookings ADD COLUMN IF NOT EXISTS extra_charges JSONB DEFAULT '[]'::jsonb;
+      -- Admin-only: never shown to the client, unlike their own notes field.
+      ALTER TABLE bookings ADD COLUMN IF NOT EXISTS admin_notes TEXT;
 
       INSERT INTO settings (key, value) VALUES ('hourly_rate', '80')
       ON CONFLICT (key) DO NOTHING;
@@ -99,6 +113,14 @@ export async function initDatabase(): Promise<Pool> {
         display_order INTEGER DEFAULT 0,
         created_at TIMESTAMPTZ DEFAULT NOW()
       );
+
+      -- 'approved' is the default so the testimonials the admin typed by hand
+      -- before reviews existed stay on the landing page after this migration.
+      ALTER TABLE testimonials ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'approved';
+      ALTER TABLE testimonials ADD COLUMN IF NOT EXISTS images JSONB DEFAULT '[]'::jsonb;
+      ALTER TABLE testimonials ADD COLUMN IF NOT EXISTS booking_id TEXT;
+      ALTER TABLE testimonials ADD COLUMN IF NOT EXISTS client_email TEXT;
+      ALTER TABLE testimonials ADD COLUMN IF NOT EXISTS submitted_at TIMESTAMPTZ;
     `);
   } finally {
     client.release();

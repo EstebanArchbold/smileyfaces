@@ -1,8 +1,9 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { BookingService, Booking } from '../../core/services/booking.service';
+import { BookingService, Booking, ExtraCharge } from '../../core/services/booking.service';
 import { EventTypeService } from '../../core/services/event-type.service';
+import { SettingsService } from '../../core/services/settings.service';
 
 @Component({
   selector: 'app-bookings-management',
@@ -30,6 +31,23 @@ export class BookingsManagementComponent implements OnInit {
   copied = signal(false);
   blankCopied = signal(false);
 
+  // Review-link generator modal
+  reviewBooking = signal<Booking | null>(null);
+  reviewName = '';
+  reviewEmail = '';
+  generatedReviewLink = signal<string | null>(null);
+  reviewCopied = signal(false);
+
+  // Billing & notes modal (discount, extra charges, private notes)
+  billingBooking = signal<Booking | null>(null);
+  billingDiscount = 0;
+  billingDiscountNote = '';
+  billingCharges = signal<ExtraCharge[]>([]);
+  billingNotes = '';
+  billingSaving = signal(false);
+  billingError = signal<string | null>(null);
+  hourlyRate = signal(80);
+
   // Reschedule modal
   editBooking = signal<Booking | null>(null);
   editDate = '';
@@ -56,7 +74,8 @@ export class BookingsManagementComponent implements OnInit {
 
   constructor(
     private bookingService: BookingService,
-    private eventTypeService: EventTypeService
+    private eventTypeService: EventTypeService,
+    private settingsService: SettingsService
   ) {}
 
   ngOnInit() {
@@ -65,6 +84,10 @@ export class BookingsManagementComponent implements OnInit {
       for (const t of types) {
         this.serviceLabels[t.value] = t.label;
       }
+    });
+    // Needed to show what a booking adds up to once charges and discounts are in
+    this.settingsService.get().subscribe(settings => {
+      this.hourlyRate.set(Number(settings['hourly_rate']) || 80);
     });
   }
 
@@ -180,6 +203,139 @@ export class BookingsManagementComponent implements OnInit {
       this.blankCopied.set(true);
       setTimeout(() => this.blankCopied.set(false), 2500);
     });
+  }
+
+  openReviewModal(booking: Booking, event: Event) {
+    event.stopPropagation();
+    this.reviewBooking.set(booking);
+    this.reviewName = booking.client_name;
+    this.reviewEmail = booking.client_email || '';
+    this.generatedReviewLink.set(null);
+    this.reviewCopied.set(false);
+  }
+
+  closeReviewModal() {
+    this.reviewBooking.set(null);
+    this.generatedReviewLink.set(null);
+  }
+
+  generateReviewLink() {
+    const booking = this.reviewBooking();
+    if (!booking) return;
+
+    const params = new URLSearchParams();
+    if (this.reviewName.trim()) params.set('name', this.reviewName.trim());
+    if (this.reviewEmail.trim()) params.set('email', this.reviewEmail.trim());
+    params.set('date', this.formatDate(booking.date));
+
+    this.generatedReviewLink.set(`${window.location.origin}/review/${booking.id}?${params.toString()}`);
+    this.reviewCopied.set(false);
+  }
+
+  copyReviewLink() {
+    const link = this.generatedReviewLink();
+    if (!link) return;
+    navigator.clipboard.writeText(link).then(() => {
+      this.reviewCopied.set(true);
+      setTimeout(() => this.reviewCopied.set(false), 2500);
+    });
+  }
+
+  openBillingModal(booking: Booking, event: Event) {
+    event.stopPropagation();
+    this.billingBooking.set(booking);
+    this.billingDiscount = Number(booking.discount) || 0;
+    this.billingDiscountNote = booking.discount_note || '';
+    // Copied, so editing rows in the modal doesn't mutate the row behind it
+    // before the admin saves.
+    this.billingCharges.set((booking.extra_charges || []).map(c => ({ ...c })));
+    this.billingNotes = booking.admin_notes || '';
+    this.billingError.set(null);
+  }
+
+  closeBillingModal() {
+    this.billingBooking.set(null);
+  }
+
+  addCharge() {
+    this.billingCharges.update(list => [...list, { label: '', amount: 0 }]);
+  }
+
+  removeCharge(index: number) {
+    this.billingCharges.update(list => list.filter((_, i) => i !== index));
+  }
+
+  /** Quick presets for the charges that come up on almost every event. */
+  addPresetCharge(label: string) {
+    this.billingCharges.update(list => [...list, { label, amount: 0 }]);
+  }
+
+  baseAmount(booking: Booking): number {
+    return this.hoursOf(booking) * this.hourlyRate();
+  }
+
+  chargesTotal(charges: ExtraCharge[]): number {
+    return charges.reduce((sum, c) => sum + (Number(c.amount) || 0), 0);
+  }
+
+  /** Base + extras − discount, never below zero (matches the server's math). */
+  bookingTotal(booking: Booking, charges?: ExtraCharge[], discount?: number): number {
+    const extras = this.chargesTotal(charges ?? booking.extra_charges ?? []);
+    const off = discount ?? Number(booking.discount) ?? 0;
+    return Math.max(0, this.baseAmount(booking) + extras - (Number(off) || 0));
+  }
+
+  /** Revenue counts delivered work only, matching the dashboard's own rule. */
+  countsTowardRevenue(booking: Booking): boolean {
+    return booking.status === 'completed';
+  }
+
+  hasBillingInfo(booking: Booking): boolean {
+    return Number(booking.discount) > 0
+      || (booking.extra_charges?.length || 0) > 0
+      || !!booking.admin_notes;
+  }
+
+  saveBilling() {
+    const booking = this.billingBooking();
+    if (!booking) return;
+
+    // Blank rows are what a half-filled "add charge" line looks like; drop them
+    // instead of making the admin clean up before saving.
+    const charges = this.billingCharges()
+      .filter(c => c.label.trim() || c.amount)
+      .map(c => ({ label: c.label.trim(), amount: Number(c.amount) || 0 }));
+
+    const missingLabel = charges.find(c => !c.label);
+    if (missingLabel) {
+      this.billingError.set('Every extra charge needs a name.');
+      return;
+    }
+
+    this.billingSaving.set(true);
+    this.billingError.set(null);
+    this.bookingService.updateBilling(booking.id, {
+      discount: Number(this.billingDiscount) || 0,
+      discount_note: this.billingDiscountNote.trim(),
+      extra_charges: charges,
+      admin_notes: this.billingNotes.trim(),
+    }).subscribe({
+      next: updated => {
+        this.bookings.update(list => list.map(b => b.id === updated.id ? updated : b));
+        this.billingSaving.set(false);
+        this.closeBillingModal();
+      },
+      error: err => {
+        this.billingSaving.set(false);
+        this.billingError.set(err.error?.error || 'Could not save. Please try again.');
+      },
+    });
+  }
+
+  private hoursOf(booking: Booking): number {
+    const [sh, sm] = booking.start_time.split(':').map(Number);
+    const [eh, em] = booking.end_time.split(':').map(Number);
+    return (eh + (em || 0) / 60) - (sh + (sm || 0) / 60);
   }
 
   openEditModal(booking: Booking, event: Event) {

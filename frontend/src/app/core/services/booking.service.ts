@@ -2,6 +2,18 @@ import { Injectable } from '@angular/core';
 import { ApiService } from './api.service';
 import { Observable } from 'rxjs';
 
+export interface ExtraCharge {
+  label: string;
+  amount: number;
+}
+
+export interface BillingDto {
+  discount?: number;
+  discount_note?: string;
+  extra_charges?: ExtraCharge[];
+  admin_notes?: string;
+}
+
 export interface Booking {
   id: string;
   client_name: string;
@@ -23,6 +35,12 @@ export interface Booking {
   allergies: string | null;
   comments: string | null;
   confirmation_submitted_at: string | null;
+  /** NUMERIC comes back from the API as a string. */
+  discount: string | number | null;
+  discount_note: string | null;
+  extra_charges: ExtraCharge[];
+  /** Private to the admin — never shown to the client. */
+  admin_notes: string | null;
   status: string;
   google_event_id: string | null;
   created_at: string;
@@ -90,6 +108,10 @@ export class BookingService {
 
   updateTimes(id: string, data: { date: string; start_time: string; end_time: string }): Observable<Booking> {
     return this.api.put<Booking>(`/bookings/${id}`, data);
+  }
+
+  updateBilling(id: string, data: BillingDto): Observable<Booking> {
+    return this.api.patch<Booking>(`/bookings/${id}/billing`, data);
   }
 
   getAvailability(date: string): Observable<{ blocked: { start: number; end: number }[]; gap_minutes: number }> {

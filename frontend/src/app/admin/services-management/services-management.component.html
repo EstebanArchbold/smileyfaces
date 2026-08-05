@@ -1,0 +1,93 @@
+<div class="admin-header">
+  <h1 class="headline-lg">Services</h1>
+  <p class="body-md text-muted">Edit what each service page shows. Photos are tagged from the Gallery section.</p>
+</div>
+
+<div class="service-tabs">
+  @for (service of services; track service.slug) {
+    <button
+      type="button"
+      class="service-tab"
+      [class.active]="activeSlug() === service.slug"
+      (click)="selectService(service.slug)">
+      <span class="material-symbols-outlined">{{ service.icon }}</span>
+      <span class="tab-text">
+        {{ service.label }}
+        <span class="tab-sub">{{ photoCount(service.slug) }} photo{{ photoCount(service.slug) === 1 ? '' : 's' }}</span>
+      </span>
+    </button>
+  }
+</div>
+
+<div class="settings-card">
+  <h3 class="title-lg">Header Image</h3>
+  <p class="body-sm text-muted settings-desc">
+    Shown beside the title at the top of <code>/services/{{ activeService.slug }}</code>. Without one, a placeholder is displayed.
+  </p>
+
+  <div class="hero-image-row">
+    @if (imagePreview()) {
+      <img class="hero-thumb" [src]="imagePreview()" alt="New header image preview">
+    } @else if (activeImage()) {
+      <img class="hero-thumb" [src]="activeImage()" alt="Current header image">
+    } @else {
+      <div class="hero-thumb hero-thumb-empty">
+        <span class="material-symbols-outlined">image</span>
+      </div>
+    }
+    <div class="hero-image-actions">
+      <input type="file" accept="image/*" (change)="onImageSelected($event)">
+      <button class="save-btn" (click)="uploadImage()" [disabled]="!imageFile || imageUploading()">
+        @if (imageUploading()) { Uploading... } @else { Upload Image }
+      </button>
+    </div>
+  </div>
+  @if (imageError()) {
+    <span class="save-error">{{ imageError() }}</span>
+  }
+</div>
+
+<div class="settings-card">
+  <h3 class="title-lg">{{ activeService.label }} Content</h3>
+  <p class="body-sm text-muted settings-desc">
+    The text on the service page. Leave a field as-is to keep the current wording.
+  </p>
+
+  @for (field of fields; track field.key) {
+    <div class="content-field">
+      <label class="label-sm">{{ field.label }}</label>
+      @if (field.hint) {
+        <span class="body-sm text-muted field-hint">{{ field.hint }}</span>
+      }
+      @if (field.multiline) {
+        <textarea class="content-input" rows="3" [(ngModel)]="content[key(field.key)]"></textarea>
+      } @else {
+        <input class="content-input" type="text" [(ngModel)]="content[key(field.key)]">
+      }
+      <span class="word-count" [class.over]="overLimit(content[key(field.key)])">
+        {{ wordCount(content[key(field.key)]) }} / 50 words
+      </span>
+    </div>
+  }
+
+  <div class="save-row">
+    <button class="save-btn" (click)="save()" [disabled]="saving()">
+      @if (saving()) { Saving... } @else { Save Content }
+    </button>
+    @if (saved()) {
+      <span class="save-success">Saved!</span>
+    }
+    @if (error()) {
+      <span class="save-error">{{ error() }}</span>
+    }
+  </div>
+</div>
+
+<div class="settings-card">
+  <h3 class="title-lg">Photos</h3>
+  <p class="body-sm text-muted settings-desc">
+    The gallery on this page shows every image tagged <strong>{{ activeService.label }}</strong> — right now that's
+    {{ photoCount(activeService.slug) }}. Tag them from Gallery, using the Service selector on each image.
+  </p>
+  <a routerLink="/admin/gallery" class="save-btn inline-link">Go to Gallery</a>
+</div>

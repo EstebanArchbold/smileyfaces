@@ -1,0 +1,222 @@
+// Mirrors the home hero: same proportions and type scale, image first.
+.service-hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding: 6rem 2rem 4rem;
+  background: var(--surface);
+}
+
+.service-hero-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+  width: 100%;
+}
+
+.service-hero-content {
+  padding-right: 1rem;
+
+  h1 {
+    margin-bottom: 1.5rem;
+
+    .text-emerald {
+      color: var(--emerald);
+    }
+  }
+
+  .service-subtitle {
+    color: var(--on-surface-variant);
+    max-width: 420px;
+    margin-bottom: 2.5rem;
+  }
+}
+
+.cta-btn {
+  display: inline-block;
+  background: var(--emerald);
+  color: var(--on-primary);
+  padding: 0.875rem 2.25rem;
+  border: none;
+  border-radius: 9999px;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    transform: scale(1.03);
+    box-shadow: 0 12px 24px rgba(33, 84, 65, 0.2);
+  }
+}
+
+.service-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 3rem;
+  color: var(--on-surface-variant);
+
+  .material-symbols-outlined {
+    font-size: 1.25rem;
+    color: var(--primary);
+  }
+}
+
+.service-hero-image {
+  position: relative;
+
+  .service-hero-photo {
+    width: 100%;
+    aspect-ratio: 3/4;
+    object-fit: cover;
+    border-radius: 2rem;
+    display: block;
+  }
+
+  .service-hero-placeholder {
+    aspect-ratio: 3/4;
+    background: linear-gradient(135deg, var(--primary-container), var(--surface-container-highest));
+    border-radius: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    color: var(--primary);
+
+    .material-symbols-outlined {
+      font-size: 4rem;
+    }
+
+    p {
+      font-weight: 600;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05rem;
+    }
+  }
+}
+
+.service-gallery {
+  background: var(--surface-container-low);
+}
+
+.service-gallery-header {
+  margin-bottom: 2.5rem;
+
+  .label-sm {
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+  }
+
+  h2 { margin-bottom: 0.75rem; }
+  p { max-width: 560px; }
+}
+
+.masonry-grid {
+  columns: 3;
+  column-gap: 1.25rem;
+
+  .masonry-item {
+    break-inside: avoid;
+    margin-bottom: 1.25rem;
+    border-radius: 1.5rem;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+
+    img {
+      width: 100%;
+      display: block;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    &:hover img {
+      transform: scale(1.05);
+    }
+
+    .masonry-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 1.5rem;
+      background: linear-gradient(transparent, rgba(48, 17, 27, 0.6));
+      color: white;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    &:hover .masonry-overlay {
+      opacity: 1;
+    }
+  }
+}
+
+.empty-gallery {
+  column-span: all;
+  text-align: center;
+  padding: 5rem 2rem;
+  color: var(--on-surface-variant);
+
+  .material-symbols-outlined {
+    font-size: 4rem;
+    color: var(--primary-container);
+    margin-bottom: 1rem;
+    display: block;
+  }
+}
+
+@media (max-width: 1024px) {
+  .service-hero-inner {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+
+  // Stacked, the copy reads first and the photo follows it.
+  .service-hero-image { order: 2; }
+  .service-hero-content { order: 1; }
+
+  .service-hero-content {
+    padding-right: 0;
+    text-align: center;
+
+    .service-subtitle {
+      max-width: 100%;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  }
+
+  .service-badge { justify-content: center; }
+
+  .service-hero-image .service-hero-placeholder,
+  .service-hero-image .service-hero-photo {
+    max-width: 480px;
+    margin: 0 auto;
+    aspect-ratio: 4/3;
+  }
+
+  .masonry-grid { columns: 2; }
+}
+
+@media (max-width: 640px) {
+  .service-hero {
+    padding: 5rem 1.25rem 3rem;
+    min-height: auto;
+  }
+
+  .service-hero-content h1 { font-size: 2.5rem; }
+
+  .masonry-grid { columns: 1; }
+}

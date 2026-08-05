@@ -8,6 +8,8 @@ export interface GalleryItem {
   category: string;
   image_path: string;
   display_order: number;
+  /** Which service page this photo belongs to, or null for none. */
+  service: string | null;
   created_at: string;
 }
 
@@ -21,6 +23,11 @@ export class GalleryService {
       params['category'] = category;
     }
     return this.api.get<GalleryItem[]>('/gallery', params);
+  }
+
+  /** Photos tagged with one of the service pages. */
+  getByService(service: string): Observable<GalleryItem[]> {
+    return this.api.get<GalleryItem[]>('/gallery', { service });
   }
 
   upload(formData: FormData): Observable<GalleryItem> {

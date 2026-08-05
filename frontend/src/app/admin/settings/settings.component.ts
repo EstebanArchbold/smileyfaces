@@ -1,9 +1,9 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SettingsService } from '../../core/services/settings.service';
 import { EventTypeService, EventType } from '../../core/services/event-type.service';
-import { TestimonialService, Testimonial } from '../../core/services/testimonial.service';
+import { TestimonialService, Testimonial, TestimonialStatus } from '../../core/services/testimonial.service';
 import { compressImage } from '../../core/utils/image.util';
 import { PushService } from '../../core/services/push.service';
 
@@ -53,13 +53,6 @@ export class SettingsComponent implements OnInit {
   heroUploading = signal(false);
   heroError = signal<string | null>(null);
 
-  // About image
-  aboutImage = signal<string | null>(null);
-  aboutFile: File | null = null;
-  aboutPreview = signal<string | null>(null);
-  aboutUploading = signal(false);
-  aboutError = signal<string | null>(null);
-
   // Event types
   eventTypes = signal<EventType[]>([]);
   newTypeLabel = '';
@@ -69,6 +62,13 @@ export class SettingsComponent implements OnInit {
 
   // Testimonials
   testimonials = signal<Testimonial[]>([]);
+  // Opens on 'pending' so whatever a client just submitted is the first thing
+  // the admin sees when they land here from the notification.
+  testimonialTab = signal<TestimonialStatus>('pending');
+  visibleTestimonials = computed(() =>
+    this.testimonials().filter(t => t.status === this.testimonialTab())
+  );
+  pendingCount = computed(() => this.testimonials().filter(t => t.status === 'pending').length);
   newTestimonialAuthor = '';
   newTestimonialQuote = '';
   testimonialSaving = signal(false);
@@ -154,7 +154,6 @@ export class SettingsComponent implements OnInit {
   private applySettings(settings: Record<string, string | undefined>) {
     this.hourlyRate = Number(settings['hourly_rate']) || 80;
     this.heroImage.set(settings['hero_image'] || null);
-    this.aboutImage.set(settings['about_image'] || null);
     this.calendarConfigured.set(settings['google_calendar_configured'] === 'true');
     for (const field of this.contentFields) {
       // Fall back to the live default so the field shows the text currently on
@@ -238,35 +237,6 @@ export class SettingsComponent implements OnInit {
     });
   }
 
-  onAboutFileSelected(event: Event) {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
-      this.aboutFile = input.files[0];
-      const reader = new FileReader();
-      reader.onload = () => this.aboutPreview.set(reader.result as string);
-      reader.readAsDataURL(this.aboutFile);
-    }
-  }
-
-  async uploadAboutImage() {
-    if (!this.aboutFile) return;
-    this.aboutUploading.set(true);
-    this.aboutError.set(null);
-    const file = await compressImage(this.aboutFile);
-    this.settingsService.uploadAboutImage(file).subscribe({
-      next: settings => {
-        this.applySettings(settings);
-        this.aboutFile = null;
-        this.aboutPreview.set(null);
-        this.aboutUploading.set(false);
-      },
-      error: err => {
-        this.aboutUploading.set(false);
-        this.aboutError.set(this.uploadErrorMessage(err));
-      },
-    });
-  }
-
   private uploadErrorMessage(err: unknown): string {
     const e = err as { status?: number; error?: { error?: string } };
     if (e?.error?.error) return e.error.error;
@@ -316,7 +286,27 @@ export class SettingsComponent implements OnInit {
   }
 
   loadTestimonials() {
-    this.testimonialService.getAll().subscribe(items => this.testimonials.set(items));
+    this.testimonialService.getAllForAdmin().subscribe(items => this.testimonials.set(items));
+  }
+
+  selectTestimonialTab(status: TestimonialStatus) {
+    this.testimonialTab.set(status);
+    this.testimonialError.set(null);
+  }
+
+  setTestimonialStatus(item: Testimonial, status: TestimonialStatus) {
+    this.testimonialError.set(null);
+    this.testimonialService.setStatus(item.id, status).subscribe({
+      next: updated => this.testimonials.update(items =>
+        items.map(t => t.id === updated.id ? { ...t, status: updated.status } : t)
+      ),
+      error: err => this.testimonialError.set(err.error?.error || 'Failed to update the review.'),
+    });
+  }
+
+  submittedLabel(item: Testimonial): string {
+    const date = item.submitted_at || item.created_at;
+    return date ? new Date(date).toLocaleDateString() : '';
   }
 
   addTestimonial() {
@@ -331,6 +321,9 @@ export class SettingsComponent implements OnInit {
         this.newTestimonialAuthor = '';
         this.newTestimonialQuote = '';
         this.testimonialSaving.set(false);
+        // Admin-written testimonials go live immediately, so show the tab where
+        // it actually landed instead of leaving the list looking unchanged.
+        this.testimonialTab.set('approved');
         this.loadTestimonials();
       },
       error: err => {

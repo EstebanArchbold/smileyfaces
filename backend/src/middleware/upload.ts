@@ -42,18 +42,28 @@ export const upload = multer({
  * sitting in memory all at once.
  */
 export async function compressUpload(req: Request, _res: Response, next: NextFunction): Promise<void> {
-  const file = req.file;
-  if (!file || PASSTHROUGH_MIME.includes(file.mimetype)) {
-    next();
-    return;
+  // Everything is inside compressFile's catch on purpose: Express 4 does not
+  // handle a rejected promise from async middleware, so anything thrown here
+  // would hang the request with no response at all rather than surface an error.
+  if (req.file) await compressFile(req.file);
+  next();
+}
+
+/** Same as compressUpload, for routes that accept several files at once. */
+export async function compressUploads(req: Request, _res: Response, next: NextFunction): Promise<void> {
+  const files = Array.isArray(req.files) ? req.files : [];
+  for (const file of files) {
+    await compressFile(file);
   }
+  next();
+}
+
+async function compressFile(file: Express.Multer.File): Promise<void> {
+  if (PASSTHROUGH_MIME.includes(file.mimetype)) return;
 
   const webpName = `${path.parse(file.filename).name}.webp`;
   const webpPath = path.join(file.destination, webpName);
 
-  // Everything is inside the catch on purpose: Express 4 does not handle a
-  // rejected promise from async middleware, so anything thrown here would hang
-  // the request with no response at all rather than surface an error.
   try {
     await compressToWebp(file.path, webpPath);
     // Read the size before touching anything, so a failure here still leaves
@@ -69,6 +79,4 @@ export async function compressUpload(req: Request, _res: Response, next: NextFun
     console.error('Could not compress upload, keeping the original:', err);
     if (fs.existsSync(webpPath)) fs.unlinkSync(webpPath);
   }
-
-  next();
 }

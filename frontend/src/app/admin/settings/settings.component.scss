@@ -246,6 +246,72 @@
 
   &:hover { background: var(--surface-container-highest); color: var(--on-surface); }
   &.danger:hover { color: var(--error, #b3261e); }
+  &.approve { color: var(--success, #2e7d32); }
+}
+
+.testimonial-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+
+  .tab-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.4rem 0.9rem;
+    border: 1px solid var(--surface-variant);
+    border-radius: 9999px;
+    background: transparent;
+    color: var(--on-surface-variant);
+    font-family: inherit;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover { background: var(--surface-container-highest); }
+
+    &.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: var(--on-primary);
+    }
+  }
+
+  .tab-count {
+    display: inline-grid;
+    place-items: center;
+    min-width: 1.25rem;
+    height: 1.25rem;
+    padding: 0 0.25rem;
+    border-radius: 9999px;
+    background: var(--error, #b3261e);
+    color: #fff;
+    font-size: 0.6875rem;
+  }
+}
+
+.testimonial-photos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+
+  img {
+    width: 72px;
+    height: 72px;
+    object-fit: cover;
+    border-radius: 0.5rem;
+    display: block;
+  }
+}
+
+.testimonial-meta {
+  font-size: 0.75rem;
+}
+
+.empty-testimonials {
+  padding: 1rem 0;
 }
 
 .save-btn.small {

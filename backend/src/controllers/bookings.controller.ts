@@ -310,6 +310,78 @@ export async function updateBooking(req: Request, res: Response): Promise<void> 
   res.json(updated.rows[0]);
 }
 
+/**
+ * Admin-only money and notes on a booking: a discount, any extra charges
+ * (gas, parking, ...) and private notes about the client. Kept off updateBooking
+ * because none of it touches the schedule or the calendar sync.
+ */
+export async function updateBookingBilling(req: Request, res: Response): Promise<void> {
+  const db = getDatabase();
+  const { id } = req.params;
+  const { discount, discount_note, extra_charges, admin_notes } = req.body;
+
+  const existing = await db.query('SELECT id FROM bookings WHERE id = $1', [id]);
+  if (existing.rows.length === 0) {
+    res.status(404).json({ error: 'Booking not found' });
+    return;
+  }
+
+  let discountValue: number | undefined;
+  if (discount !== undefined) {
+    discountValue = Number(discount);
+    if (isNaN(discountValue) || discountValue < 0) {
+      res.status(400).json({ error: 'Discount must be a number of 0 or more' });
+      return;
+    }
+  }
+
+  let charges: { label: string; amount: number }[] | undefined;
+  if (extra_charges !== undefined) {
+    if (!Array.isArray(extra_charges)) {
+      res.status(400).json({ error: 'extra_charges must be an array' });
+      return;
+    }
+    charges = [];
+    for (const charge of extra_charges) {
+      const label = typeof charge?.label === 'string' ? charge.label.trim() : '';
+      const amount = Number(charge?.amount);
+      // A half-filled row is what an empty "add charge" line looks like, so it
+      // is dropped rather than rejected.
+      if (!label && !charge?.amount) continue;
+      if (!label) {
+        res.status(400).json({ error: 'Every extra charge needs a label' });
+        return;
+      }
+      if (isNaN(amount) || amount < 0) {
+        res.status(400).json({ error: `Invalid amount for "${label}"` });
+        return;
+      }
+      charges.push({ label, amount });
+    }
+  }
+
+  const result = await db.query(
+    `UPDATE bookings SET
+       discount = COALESCE($1, discount),
+       discount_note = CASE WHEN $2::boolean THEN $3 ELSE discount_note END,
+       extra_charges = COALESCE($4::jsonb, extra_charges),
+       admin_notes = CASE WHEN $5::boolean THEN $6 ELSE admin_notes END,
+       updated_at = NOW()
+     WHERE id = $7 RETURNING *`,
+    [
+      discountValue ?? null,
+      discount_note !== undefined,
+      typeof discount_note === 'string' && discount_note.trim() ? discount_note.trim() : null,
+      charges ? JSON.stringify(charges) : null,
+      admin_notes !== undefined,
+      typeof admin_notes === 'string' && admin_notes.trim() ? admin_notes.trim() : null,
+      id,
+    ]
+  );
+
+  res.json(result.rows[0]);
+}
+
 export async function getBookingStats(_req: Request, res: Response): Promise<void> {
   const db = getDatabase();
 
@@ -328,11 +400,11 @@ export async function getBookingStats(_req: Request, res: Response): Promise<voi
 
   // Revenue only counts work already delivered, so 'completed' bookings only
   const revenueRows = await db.query(
-    "SELECT start_time, end_time FROM bookings WHERE status = 'completed'"
+    "SELECT start_time, end_time, discount, extra_charges FROM bookings WHERE status = 'completed'"
   );
   let totalRevenue = 0;
   for (const b of revenueRows.rows) {
-    totalRevenue += calculateHours(b.start_time, b.end_time) * hourlyRate;
+    totalRevenue += bookingTotal(b, hourlyRate);
   }
 
   // Bookings by month
@@ -344,16 +416,15 @@ export async function getBookingStats(_req: Request, res: Response): Promise<voi
 
   // Revenue by month
   const revenueDataResult = await db.query(`
-    SELECT TO_CHAR(date::date, 'YYYY-MM') as month, start_time, end_time
+    SELECT TO_CHAR(date::date, 'YYYY-MM') as month, start_time, end_time, discount, extra_charges
     FROM bookings WHERE status = 'completed'
     ORDER BY month DESC
   `);
 
   const revenueMap = new Map<string, number>();
   for (const b of revenueDataResult.rows) {
-    const hours = calculateHours(b.start_time, b.end_time);
     const current = revenueMap.get(b.month) || 0;
-    revenueMap.set(b.month, current + hours * hourlyRate);
+    revenueMap.set(b.month, current + bookingTotal(b, hourlyRate));
   }
 
   const revenueByMonth = Array.from(revenueMap.entries())
@@ -368,6 +439,22 @@ export async function getBookingStats(_req: Request, res: Response): Promise<voi
     bookingsByMonth: byMonthResult.rows.map(r => ({ month: r.month, count: Number(r.count) })).reverse(),
     revenueByMonth: revenueByMonth.reverse(),
   });
+}
+
+/**
+ * What the booking is actually worth: the hours at the hourly rate, plus any
+ * extra charges the admin added, minus the discount. Floored at zero so a
+ * discount larger than the job can't subtract from the month's total.
+ */
+function bookingTotal(
+  booking: { start_time: string; end_time: string; discount?: string | number | null; extra_charges?: { amount: number }[] | null },
+  hourlyRate: number
+): number {
+  const base = calculateHours(booking.start_time, booking.end_time) * hourlyRate;
+  const extras = (booking.extra_charges || []).reduce((sum, c) => sum + (Number(c.amount) || 0), 0);
+  // pg returns NUMERIC as a string, so this always goes through Number().
+  const discount = Number(booking.discount) || 0;
+  return Math.max(0, base + extras - discount);
 }
 
 function calculateHours(startTime: string, endTime: string): number {

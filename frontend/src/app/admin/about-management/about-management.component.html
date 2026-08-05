@@ -1,0 +1,67 @@
+<div class="admin-header">
+  <h1 class="headline-lg">About Page</h1>
+  <p class="body-md text-muted">Edit everything shown on the public About page.</p>
+</div>
+
+<div class="settings-card">
+  <h3 class="title-lg">Story Image</h3>
+  <p class="body-sm text-muted settings-desc">The photo beside the story text. Without one, a placeholder is shown.</p>
+
+  <div class="hero-image-row">
+    @if (imagePreview()) {
+      <img class="hero-thumb" [src]="imagePreview()" alt="New about image preview">
+    } @else if (aboutImage()) {
+      <img class="hero-thumb" [src]="aboutImage()" alt="Current about image">
+    } @else {
+      <div class="hero-thumb hero-thumb-empty">
+        <span class="material-symbols-outlined">image</span>
+      </div>
+    }
+    <div class="hero-image-actions">
+      <input type="file" accept="image/*" (change)="onImageSelected($event)">
+      <button class="save-btn" (click)="uploadImage()" [disabled]="!imageFile || imageUploading()">
+        @if (imageUploading()) { Uploading... } @else { Upload Image }
+      </button>
+    </div>
+  </div>
+  @if (imageError()) {
+    <span class="save-error">{{ imageError() }}</span>
+  }
+</div>
+
+@for (group of groups; track group) {
+  <div class="settings-card">
+    <h3 class="title-lg">{{ group }}</h3>
+
+    @for (field of fieldsOf(group); track field.key) {
+      <div class="content-field">
+        <label class="label-sm">{{ field.label }}</label>
+        @if (field.hint) {
+          <span class="body-sm text-muted field-hint">{{ field.hint }}</span>
+        }
+        @if (field.multiline) {
+          <textarea class="content-input" rows="3" [(ngModel)]="content[field.key]"></textarea>
+        } @else {
+          <input class="content-input" type="text" [(ngModel)]="content[field.key]">
+        }
+        <span class="word-count" [class.over]="overLimit(content[field.key])">
+          {{ wordCount(content[field.key]) }} / 50 words
+        </span>
+      </div>
+    }
+  </div>
+}
+
+<div class="settings-card save-card">
+  <div class="save-row">
+    <button class="save-btn" (click)="save()" [disabled]="saving()">
+      @if (saving()) { Saving... } @else { Save About Page }
+    </button>
+    @if (saved()) {
+      <span class="save-success">Saved!</span>
+    }
+    @if (error()) {
+      <span class="save-error">{{ error() }}</span>
+    }
+  </div>
+</div>

@@ -100,6 +100,12 @@
               <button class="link-btn" title="Generate confirmation link" (click)="openLinkModal(booking, $event)">
                 <span class="material-symbols-outlined">link</span>
               </button>
+              <button class="link-btn" [class.has-billing]="hasBillingInfo(booking)" title="Discounts, extra charges & notes" (click)="openBillingModal(booking, $event)">
+                <span class="material-symbols-outlined">request_quote</span>
+              </button>
+              <button class="link-btn" title="Generate review link" (click)="openReviewModal(booking, $event)">
+                <span class="material-symbols-outlined">rate_review</span>
+              </button>
               <button class="link-btn" title="Change date / time" (click)="openEditModal(booking, $event)">
                 <span class="material-symbols-outlined">edit_calendar</span>
               </button>
@@ -126,6 +132,20 @@
                     @if (booking.confirmation_submitted_at) { Received } @else { Not received yet }
                   </span>
                 </div>
+                <div class="detail-item wide billing-detail">
+                  <span class="label-sm text-muted">Billing</span>
+                  <div class="billing-lines">
+                    <span class="body-md">{{ baseAmount(booking) | currency }} <span class="text-muted">base</span></span>
+                    @for (charge of booking.extra_charges; track $index) {
+                      <span class="body-md charge-line">+ {{ charge.amount | currency }} <span class="text-muted">{{ charge.label }}</span></span>
+                    }
+                    @if (booking.discount && +booking.discount > 0) {
+                      <span class="body-md discount-line">− {{ +booking.discount | currency }} <span class="text-muted">{{ booking.discount_note || 'discount' }}</span></span>
+                    }
+                    <span class="body-md billing-total">{{ bookingTotal(booking) | currency }} total</span>
+                  </div>
+                </div>
+                <div class="detail-item wide"><span class="label-sm text-muted">Private Notes</span><span class="body-md">{{ booking.admin_notes || '—' }}</span></div>
               </div>
             </td>
           </tr>
@@ -175,6 +195,20 @@
               @if (booking.confirmation_submitted_at) { Received } @else { Not received yet }
             </span>
           </div>
+          <div class="detail-item billing-detail">
+            <span class="label-sm text-muted">Billing</span>
+            <div class="billing-lines">
+              <span class="body-md">{{ baseAmount(booking) | currency }} <span class="text-muted">base</span></span>
+              @for (charge of booking.extra_charges; track $index) {
+                <span class="body-md charge-line">+ {{ charge.amount | currency }} <span class="text-muted">{{ charge.label }}</span></span>
+              }
+              @if (booking.discount && +booking.discount > 0) {
+                <span class="body-md discount-line">− {{ +booking.discount | currency }} <span class="text-muted">{{ booking.discount_note || 'discount' }}</span></span>
+              }
+              <span class="body-md billing-total">{{ bookingTotal(booking) | currency }} total</span>
+            </div>
+          </div>
+          <div class="detail-item"><span class="label-sm text-muted">Private Notes</span><span class="body-md">{{ booking.admin_notes || '—' }}</span></div>
         </div>
       }
 
@@ -190,6 +224,12 @@
         </select>
         <button class="link-btn" title="Generate confirmation link" (click)="openLinkModal(booking, $event)">
           <span class="material-symbols-outlined">link</span>
+        </button>
+        <button class="link-btn" [class.has-billing]="hasBillingInfo(booking)" title="Discounts, extra charges & notes" (click)="openBillingModal(booking, $event)">
+          <span class="material-symbols-outlined">request_quote</span>
+        </button>
+        <button class="link-btn" title="Generate review link" (click)="openReviewModal(booking, $event)">
+          <span class="material-symbols-outlined">rate_review</span>
         </button>
         <button class="link-btn" title="Change date / time" (click)="openEditModal(booking, $event)">
           <span class="material-symbols-outlined">edit_calendar</span>
@@ -250,6 +290,131 @@
           <button class="copy-btn" (click)="copyLink()">
             <span class="material-symbols-outlined">{{ copied() ? 'check' : 'content_copy' }}</span>
             {{ copied() ? 'Copied!' : 'Copy' }}
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+}
+
+@if (billingBooking(); as bb) {
+  <div class="modal-backdrop" (click)="closeBillingModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="title-lg">Charges & Notes</h3>
+        <button class="close-btn" (click)="closeBillingModal()">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <p class="body-sm text-muted modal-desc">
+        {{ bb.client_name }} — {{ formatDate(bb.date) }}. None of this is visible to the client; it only affects your own totals.
+      </p>
+
+      <div class="billing-base">
+        <span class="body-sm text-muted">Base ({{ bb.start_time }}–{{ bb.end_time }} at {{ hourlyRate() | currency }}/hr)</span>
+        <span class="body-md">{{ baseAmount(bb) | currency }}</span>
+      </div>
+
+      <div class="modal-field">
+        <label class="label-sm">Extra Charges</label>
+        @for (charge of billingCharges(); track $index) {
+          <div class="charge-row">
+            <input type="text" [(ngModel)]="charge.label" placeholder="What for? (gas, parking...)">
+            <input type="number" min="0" step="0.01" [(ngModel)]="charge.amount" placeholder="0.00" class="amount-input">
+            <button class="icon-btn danger" title="Remove" (click)="removeCharge($index)">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+        }
+        <div class="charge-presets">
+          <button class="preset-btn" (click)="addPresetCharge('Gas')">+ Gas</button>
+          <button class="preset-btn" (click)="addPresetCharge('Parking')">+ Parking</button>
+          <button class="preset-btn" (click)="addPresetCharge('Tip')">+ Tip</button>
+          <button class="preset-btn" (click)="addCharge()">+ Other</button>
+        </div>
+      </div>
+
+      <div class="modal-field-row">
+        <div class="modal-field">
+          <label class="label-sm">Discount</label>
+          <input type="number" min="0" step="0.01" [(ngModel)]="billingDiscount" placeholder="0.00">
+        </div>
+        <div class="modal-field">
+          <label class="label-sm">Discount Reason</label>
+          <input type="text" [(ngModel)]="billingDiscountNote" placeholder="e.g. returning client">
+        </div>
+      </div>
+
+      <div class="modal-field">
+        <label class="label-sm">Private Notes</label>
+        <textarea rows="3" [(ngModel)]="billingNotes" placeholder="Anything you want to remember about this client..."></textarea>
+      </div>
+
+      <div class="billing-summary">
+        <span class="body-sm text-muted">
+          {{ baseAmount(bb) | currency }} base
+          @if (chargesTotal(billingCharges()) > 0) { + {{ chargesTotal(billingCharges()) | currency }} extras }
+          @if (billingDiscount > 0) { − {{ billingDiscount | currency }} discount }
+        </span>
+        <span class="title-lg">{{ bookingTotal(bb, billingCharges(), billingDiscount) | currency }}</span>
+      </div>
+
+      <!-- The dashboard only counts delivered work, so without this the totals
+           look like they silently ignored the edit. -->
+      <p class="body-sm revenue-hint" [class.counting]="countsTowardRevenue(bb)">
+        <span class="material-symbols-outlined">{{ countsTowardRevenue(bb) ? 'check_circle' : 'schedule' }}</span>
+        @if (countsTowardRevenue(bb)) {
+          Counted in the dashboard revenue.
+        } @else {
+          Not in the dashboard revenue yet — it counts once this booking is marked <strong>Completed</strong> (it's {{ bb.status }}).
+        }
+      </p>
+
+      @if (billingError()) {
+        <div class="modal-error">{{ billingError() }}</div>
+      }
+
+      <div class="modal-actions">
+        <button class="generate-btn" (click)="saveBilling()" [disabled]="billingSaving()">
+          @if (billingSaving()) { Saving... } @else { Save }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (reviewBooking(); as rb) {
+  <div class="modal-backdrop" (click)="closeReviewModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="title-lg">Review Link</h3>
+        <button class="close-btn" (click)="closeReviewModal()">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <p class="body-sm text-muted modal-desc">
+        Send this to {{ rb.client_name }} after the event. The form comes pre-filled with their info and lets them attach photos. Reviews arrive as <strong>pending</strong> — they only show on the home page once you approve them in Settings.
+      </p>
+
+      <div class="modal-field">
+        <label class="label-sm">Client Name</label>
+        <input type="text" [(ngModel)]="reviewName">
+      </div>
+      <div class="modal-field">
+        <label class="label-sm">Email</label>
+        <input type="email" [(ngModel)]="reviewEmail">
+      </div>
+
+      <div class="modal-actions">
+        <button class="generate-btn" (click)="generateReviewLink()">Generate Link</button>
+      </div>
+
+      @if (generatedReviewLink(); as link) {
+        <div class="generated-link">
+          <input type="text" readonly [value]="link" (click)="$any($event.target).select()">
+          <button class="copy-btn" (click)="copyReviewLink()">
+            <span class="material-symbols-outlined">{{ reviewCopied() ? 'check' : 'content_copy' }}</span>
+            {{ reviewCopied() ? 'Copied!' : 'Copy' }}
           </button>
         </div>
       }

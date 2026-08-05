@@ -20,6 +20,15 @@
             </select>
           </div>
           <div class="form-field">
+            <label class="label-sm">Service Page</label>
+            <select [(ngModel)]="service">
+              <option value="">None</option>
+              @for (svc of services; track svc.slug) {
+                <option [value]="svc.slug">{{ svc.label }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-field">
             <label class="label-sm">Image</label>
             <input type="file" accept="image/*" (change)="onFileSelected($event)">
           </div>
@@ -49,7 +58,12 @@
           </div>
           <div class="gallery-card-info">
             <span class="body-sm">{{ item.title || 'Untitled' }}</span>
-            <span class="label-sm text-muted">{{ item.category }}</span>
+            <div class="card-tags">
+              <span class="label-sm text-muted">{{ item.category }}</span>
+              @if (serviceLabel(item.service); as svcLabel) {
+                <span class="service-tag">{{ svcLabel }}</span>
+              }
+            </div>
           </div>
         </div>
       }
@@ -87,6 +101,15 @@
         <select [(ngModel)]="editCategory">
           @for (cat of categories(); track cat.value) {
             <option [value]="cat.value">{{ cat.label }}</option>
+          }
+        </select>
+      </div>
+      <div class="modal-field">
+        <label class="label-sm">Service Page</label>
+        <select [(ngModel)]="editService">
+          <option value="">None</option>
+          @for (svc of services; track svc.slug) {
+            <option [value]="svc.slug">{{ svc.label }}</option>
           }
         </select>
       </div>

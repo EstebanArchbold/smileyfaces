@@ -144,6 +144,130 @@
   .material-symbols-outlined { font-size: 1.25rem; }
 
   &:hover { background: var(--emerald); color: white; }
+
+  // A filled dot marks bookings that already carry charges, a discount or notes,
+  // so they can be spotted without opening the modal.
+  &.has-billing {
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      right: 3px;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--emerald);
+    }
+
+    &:hover::after { background: white; }
+  }
+}
+
+.billing-detail .billing-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.charge-line { color: var(--on-surface); }
+.discount-line { color: var(--error, #b3261e); }
+
+.billing-total {
+  font-weight: 700;
+  color: var(--emerald);
+  margin-top: 0.25rem;
+}
+
+.billing-base {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  background: var(--surface-container-low);
+  border-radius: 0.75rem;
+}
+
+.charge-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+
+  input { flex: 1; min-width: 0; }
+  .amount-input { flex: 0 0 110px; }
+}
+
+.icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  background: transparent;
+  cursor: pointer;
+  color: var(--on-surface-variant);
+  transition: all 0.2s ease;
+
+  .material-symbols-outlined { font-size: 1.125rem; }
+
+  &:hover { background: var(--surface-container-highest); }
+  &.danger:hover { color: var(--error, #b3261e); }
+}
+
+.charge-presets {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.25rem;
+}
+
+.preset-btn {
+  padding: 0.4rem 0.875rem;
+  border: 1px dashed var(--surface-variant);
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--on-surface-variant);
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-style: solid;
+    border-color: var(--emerald);
+    color: var(--emerald);
+  }
+}
+
+.revenue-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  color: var(--on-surface-variant);
+
+  .material-symbols-outlined { font-size: 1.125rem; }
+
+  &.counting { color: var(--success, #2e7d32); }
+}
+
+.billing-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 1rem;
+  margin-top: 0.5rem;
+  border-radius: 1rem;
+  background: var(--surface-container-low);
+
+  .title-lg { color: var(--emerald); }
 }
 
 // Mobile card list — hidden on desktop, replaces the table on phones
@@ -215,6 +339,23 @@
 .modal-field-row {
   display: flex;
   gap: 1rem;
+}
+
+.modal-field textarea {
+  background: var(--surface-container-low);
+  border: none;
+  border-bottom: 2px solid var(--surface-variant);
+  border-radius: 0.625rem 0.625rem 0 0;
+  padding: 0.625rem 0.875rem;
+  font-size: 0.9375rem;
+  font-family: inherit;
+  outline: none;
+  resize: vertical;
+
+  &:focus {
+    background: var(--surface-container-highest);
+    border-bottom-color: var(--secondary);
+  }
 }
 
 .modal-field select {
@@ -483,5 +624,10 @@
 
   // 16px inputs prevent iOS Safari from auto-zooming on focus
   .modal-field input,
+  .modal-field textarea,
   .modal-field select { font-size: 1rem; }
+
+  .charge-row {
+    .amount-input { flex: 0 0 96px; }
+  }
 }

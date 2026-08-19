@@ -1,55 +1,30 @@
 <section class="policy-hero section-padding">
   <div class="container">
-    <h1 class="display-md text-emerald">Policies</h1>
+    <h1 class="display-md text-emerald">{{ text('policy_title') }}</h1>
   </div>
 </section>
 
 <section class="policy-body section-padding">
   <div class="container">
-    <div class="policy-block">
-      <h2 class="headline-md">Booking &amp; Deposits</h2>
-      <p class="body-lg text-muted">
-        A deposit of 50% will be required to secure your date and time. Deposits go toward your final balance and confirm your reservation. Your booking is not considered confirmed until you receive a confirmation from us.
-      </p>
-    </div>
-
-    <div class="policy-block">
-      <h2 class="headline-md">Cancellations &amp; Rescheduling</h2>
-      <p class="body-lg text-muted">
-        Life happens. If you need to reschedule or cancel, please reach out as early as possible. Deposits may be transferable to a new date within a reasonable window, subject to availability. Cancellations made, 14 or fewer days before the event may result in forfeiture of the deposit.
-    </div>
-
-    <div class="policy-block">
-      <h2 class="headline-md">Health &amp; Safety</h2>
-      <p class="body-lg text-muted">
-        We use only professional-grade, skin-safe products. To protect everyone, we cannot paint over broken skin, active rashes, cold sores, or eye infections. If you have known allergies or sensitive skin, let us know in advance so we can plan accordingly. A patch test is available on request.
-      </p>
-    </div>
-
-    <div class="policy-block">
-      <h2 class="headline-md">Privacy</h2>
-      <p class="body-lg text-muted">
-        Any information you share when booking — such as your name, contact details, and event details — is used solely to coordinate and deliver your service. We never sell or share your information with third parties for marketing.
-      </p>
-    </div>
-
-    <div class="policy-block">
-      <h2 class="headline-md">Photography</h2>
-      <p class="body-lg text-muted">
-        We love sharing our work. From time to time we may photograph completed designs for our portfolio and social media. If you'd prefer your photos not be shared publicly, just let us know and we'll keep them private.
-      </p>
-    </div>
+    @for (block of blocks(); track $index) {
+      <div class="policy-block">
+        <h2 class="headline-md">{{ block.title }}</h2>
+        <p class="body-lg text-muted">{{ block.text }}</p>
+      </div>
+    }
 
     <p class="body-md text-muted policy-contact">
-      Questions about any of this? <a href="mailto:smileyfaces.business@gmail.com">Get in touch</a> — we're happy to help.
+      {{ text('policy_contact_before') }}
+      <a href="mailto:smileyfaces.business@gmail.com">{{ text('policy_contact_link') }}</a>
+      {{ text('policy_contact_after') }}
     </p>
   </div>
 </section>
 
 <section class="policy-cta section-padding">
   <div class="container cta-container">
-    <h2 class="headline-lg">Ready to Book?</h2>
-    <p class="body-lg text-muted">Let's create something beautiful together.</p>
-    <a routerLink="/booking" class="cta-btn">Book Your Session</a>
+    <h2 class="headline-lg">{{ text('policy_cta_title') }}</h2>
+    <p class="body-lg text-muted">{{ text('policy_cta_text') }}</p>
+    <a routerLink="/booking" class="cta-btn">{{ text('policy_cta_button') }}</a>
   </div>
 </section>

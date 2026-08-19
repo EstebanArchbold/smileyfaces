@@ -7,6 +7,16 @@ import { SERVICE_CONTENT_KEYS, isServiceSlug, serviceSettingKey } from '../confi
 
 const MAX_WORDS = 50;
 
+// Most copy is a headline or a short paragraph, but some policy sections are
+// terms that legitimately run long. Keys listed here get their own ceiling.
+const WORD_LIMITS: Record<string, number> = {
+  policy_block1_text: 120,
+};
+
+function wordLimit(key: string): number {
+  return WORD_LIMITS[key] ?? MAX_WORDS;
+}
+
 // Site content keys editable from the admin panel
 const CONTENT_KEYS = [
   'hero_title',
@@ -31,6 +41,24 @@ const CONTENT_KEYS = [
   'about_cta_title',
   'about_cta_text',
   'about_cta_button',
+  // Policies page, edited from Admin → Policies
+  'policy_title',
+  'policy_block1_title',
+  'policy_block1_text',
+  'policy_block2_title',
+  'policy_block2_text',
+  'policy_block3_title',
+  'policy_block3_text',
+  'policy_block4_title',
+  'policy_block4_text',
+  'policy_block5_title',
+  'policy_block5_text',
+  'policy_contact_before',
+  'policy_contact_link',
+  'policy_contact_after',
+  'policy_cta_title',
+  'policy_cta_text',
+  'policy_cta_button',
   // Copy for the three service pages, edited from Admin → Services
   ...SERVICE_CONTENT_KEYS,
 ];
@@ -77,8 +105,9 @@ export async function updateSettings(req: Request, res: Response): Promise<void>
       res.status(400).json({ error: `${key} must be a string` });
       return;
     }
-    if (countWords(value) > MAX_WORDS) {
-      res.status(400).json({ error: `${key} exceeds the ${MAX_WORDS}-word limit` });
+    const limit = wordLimit(key);
+    if (countWords(value) > limit) {
+      res.status(400).json({ error: `${key} exceeds the ${limit}-word limit` });
       return;
     }
     await db.query(

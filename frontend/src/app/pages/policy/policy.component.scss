@@ -13,7 +13,12 @@
   margin: 0 auto 2.75rem;
 
   h2 { margin-bottom: 1rem; }
-  .body-lg { color: var(--on-surface-variant); }
+  .body-lg {
+    color: var(--on-surface-variant);
+    // Keeps the line breaks and indentation typed in the admin editor, so a
+    // section can be written as bullet points instead of one run-on paragraph.
+    white-space: pre-wrap;
+  }
 }
 
 .policy-contact {

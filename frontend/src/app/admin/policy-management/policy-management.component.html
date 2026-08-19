@@ -1,0 +1,41 @@
+<div class="admin-header">
+  <h1 class="headline-lg">Policies Page</h1>
+  <p class="body-md text-muted">Edit everything shown on the public Policies page.</p>
+</div>
+
+@for (group of groups; track group) {
+  <div class="settings-card">
+    <h3 class="title-lg">{{ group }}</h3>
+
+    @for (field of fieldsOf(group); track field.key) {
+      <div class="content-field">
+        <label class="label-sm">{{ field.label }}</label>
+        @if (field.hint) {
+          <span class="body-sm text-muted field-hint">{{ field.hint }}</span>
+        }
+        @if (field.multiline) {
+          <textarea class="content-input" rows="6" [(ngModel)]="content[field.key]"></textarea>
+        } @else {
+          <input class="content-input" type="text" [(ngModel)]="content[field.key]">
+        }
+        <span class="word-count" [class.over]="overLimit(field)">
+          {{ wordCount(content[field.key]) }} / {{ limitOf(field) }} words
+        </span>
+      </div>
+    }
+  </div>
+}
+
+<div class="settings-card save-card">
+  <div class="save-row">
+    <button class="save-btn" (click)="save()" [disabled]="saving()">
+      @if (saving()) { Saving... } @else { Save Policies Page }
+    </button>
+    @if (saved()) {
+      <span class="save-success">Saved!</span>
+    }
+    @if (error()) {
+      <span class="save-error">{{ error() }}</span>
+    }
+  </div>
+</div>

@@ -72,6 +72,10 @@ export const routes: Routes = [
         loadComponent: () => import('./admin/about-management/about-management.component').then(m => m.AboutManagementComponent),
       },
       {
+        path: 'policy',
+        loadComponent: () => import('./admin/policy-management/policy-management.component').then(m => m.PolicyManagementComponent),
+      },
+      {
         path: 'settings',
         loadComponent: () => import('./admin/settings/settings.component').then(m => m.SettingsComponent),
       },

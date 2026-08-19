@@ -41,11 +41,6 @@
         @for (item of items(); track item.id; let i = $index) {
           <div class="masonry-item" (click)="openLightbox(i)">
             <img [src]="item.image_path" [alt]="item.title || svc.label" loading="lazy">
-            @if (item.title) {
-              <div class="masonry-overlay">
-                <span class="body-sm">{{ item.title }}</span>
-              </div>
-            }
           </div>
         }
         @if (items().length === 0) {

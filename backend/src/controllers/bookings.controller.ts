@@ -5,8 +5,13 @@ import { createCalendarEvent, updateCalendarEvent, deleteCalendarEvent } from '.
 import { notifyAdmin } from '../services/notification.service';
 import { Booking } from '../types';
 
-// Minimum gap between appointments (traveling time, setup, etc.)
-const GAP_MINUTES = 45;
+// Minimum gap between appointments (traveling time, setup, etc.).
+// Set to 0 to disable — raise it again to re-enable the buffer.
+const GAP_MINUTES = 0;
+
+function gapNote(): string {
+  return GAP_MINUTES > 0 ? ` (${GAP_MINUTES} min gap required)` : '';
+}
 
 function toMinutes(time: string): number {
   const [h, m] = time.split(':').map(Number);
@@ -87,7 +92,7 @@ export async function createConfirmedBooking(req: Request, res: Response): Promi
 
   const confirmedIntervals = await getConfirmedIntervals(date);
   if (hasConflict(startMin, endMin, confirmedIntervals)) {
-    res.status(409).json({ error: `That time conflicts with another confirmed booking (${GAP_MINUTES} min gap required). Please contact us to pick another time.` });
+    res.status(409).json({ error: `That time conflicts with another confirmed booking${gapNote()}. Please contact us to pick another time.` });
     return;
   }
 
@@ -273,7 +278,7 @@ export async function updateBooking(req: Request, res: Response): Promise<void> 
 
     const confirmed = await getConfirmedIntervals(newDate, String(id));
     if (hasConflict(toMinutes(newStart), toMinutes(newEnd), confirmed)) {
-      res.status(409).json({ error: `That time conflicts with another confirmed booking (${GAP_MINUTES} min gap required).` });
+      res.status(409).json({ error: `That time conflicts with another confirmed booking${gapNote()}.` });
       return;
     }
 
